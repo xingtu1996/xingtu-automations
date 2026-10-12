@@ -58,3 +58,15 @@ cat registry/AUTOMATIONS.yaml
 一线 AI 工程化实践者 · FDE 方向 · 公众号「行途」· GitHub/X：`@xingtu1996`
 
 *公开镜像只含占位符路径与聚合口径；私有 registry（含真实路径与完整 prompt）在工作区 `.harness/scheduled/`。*
+
+## 关于作者 · 行途
+
+一线 AI 工程化实践者 · FDE 方向。这些仓库不是写出来的，是每天真用、用完回炉改的。
+
+- 公众号「**行途**」（长文首发，微信搜索关注）
+- GitHub / X：`@xingtu1996` ｜ 博客：https://xingtu1996.github.io
+- 方法论旗舰仓：[xingtu-ai-engineering](https://github.com/xingtu1996/xingtu-ai-engineering)
+
+## 📄 许可证
+
+MIT License
