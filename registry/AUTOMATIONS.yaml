@@ -1,0 +1,656 @@
+# ============================================================
+# 行途 · 多 Agent 定时任务 Registry（Tool-Neutral · 公开镜像）
+# ============================================================
+# 本文件是公开镜像：路径用占位符（<WORKSPACE_ROOT>/<HOME>/<PYTHON>），
+# 平台侧重建时替换为实际值。私有全量真源在工作区 .harness/scheduled/
+# （含真实路径与完整 spec），纪律：平台任何变更必须先回写私有 registry 再同步本镜像。
+# ============================================================
+# 定位：**可迁移的镜像档案**，不是运行时事实源。
+#   · 运行时事实源 = 平台本身（WorkBuddy automation_update / CC scheduled_tasks.json / crontab）
+#   · 本文件     = 意图（prompt 全文）+ 排期 + 产物 + 工作目录 的跨工具可读快照
+#
+# 用途：① 换 harness（Claude Code / Codex / 其他 agent 工具）时照本文件重建任务
+#       ② 审计「这个工作空间上一共挂着几个自动化、各自在动哪些文件」
+#       ③ 排查漂移：平台实际排期 vs 本文件记载不一致时，一眼看出来
+#
+# 纪律：每次在平台上新增 / 修改 / 删除自动化后，**必须回来同步本文件**。
+#       派生文档（README / MIGRATION.md）只做索引与映射，**不复述 prompt 正文**——
+#       避免出现「正文改了 7 版、说明书还在 v2」的版本漂移。
+#
+#
+# 🔴 公开化红线（SAF-010 相关 · 2026-09-14 加）
+#   本文件的 prompt 正文含**内部项目名与业务代号**（某零售重构项目 / 某零售集团 / 某零售平台 / 某售前项目 / 内部协作系统 /
+#   含内部项目名与业务代号（已按类别泛化）、私人绝对路径与内部仓库名，禁原样公开。
+#   → 本文件**仅供本地私有 harness 使用，禁止同步进任何公开仓**。
+#   → 尤其注意 `github/xingtu-harness`（= github.com/xingtu1996/xingtu-harness，**公开仓**）：
+#     2026-09-14 实测其内**尚无** scheduled/automations 目录，请保持现状。
+#   → 若要开源这套 harness：必须先 desensitize（内部名换占位符），或只开源
+#     MIGRATION.md 的方法论部分（该文件不含内部名）。
+#
+# 首次留档：2026-09-14（全量 10 条）
+# ============================================================
+
+schema_version: 1
+updated: "2026-09-30"
+workspace_root: <WORKSPACE_ROOT>
+timezone: Asia/Shanghai
+platform_of_record: WorkBuddy (automation_update)
+
+# ------------------------------------------------------------
+# 排期字段说明
+#   rrule : 平台原生表达式（WorkBuddy 用 RFC 5545 RRULE）
+#   cron  : 等价 5 段 cron，可直接进 crontab / 转 GitHub Actions schedule
+#   human : 人读口径（北京时间 UTC+8）
+# ------------------------------------------------------------
+
+# ------------------------------------------------------------
+# 路径纪律（最高优先级 · 2026-09-14 血泪）
+# ------------------------------------------------------------
+path_discipline:
+  rule: 所有任务的工作目录、脚本调用、读写路径，一律锚定 workspace_root 绝对路径。
+  banned_path: <HOME>/工作室/xingtu
+  banned_reason: >-
+    该目录是 2026-09-05 前后产生的**残留副本**（与唯一根 inode 不同，非软链）。
+    残留区素材库仅 12 卡，唯一根素材库 1466 卡。任务跑在残留区 = 对着空壳干活，
+    产物落进没人看的目录，且不会报错。
+  scale_guard: >-
+    凡读取关键数据文件（如 素材库/materials_library.json）的任务，必须在 prompt 里
+    写明「正常规模」（如 1000+ 卡），异常时**中止并报错**，不得基于残缺数据继续。
+  detection: |
+    ls -ldi <WORKSPACE_ROOT> <HOME>/工作室/xingtu    # inode 必须不同才算事故
+    wc -c <WORKSPACE_ROOT>/素材库/materials_library.json        # 正常 2.3MB 量级
+
+# ============================================================
+# 自动化清单（按执行时刻排序）
+# ============================================================
+automations:
+
+  # ------------------------------------------------ T-WB-01
+  - slug: session-broadcast-collect
+    id: automation-1786033319546
+    name: AI会话广撒网采集·主题与自媒体潜力分析（每日累积沉淀）
+    status: ACTIVE
+    ring: L1
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=2;BYMINUTE=0
+      cron: "0 2 * * *"
+      human: 每天 02:00
+    cwd:
+      - <WORKSPACE_ROOT>/tools
+    purpose: 全量采集 boss×AI 历史会话 → 打主题标签 + 评自媒体潜力分 → 累积进 DB → 刷看板。数据底座。
+    artifacts:
+      - <WORKSPACE_ROOT>/tools/sessions_analysis.json
+      - <WORKSPACE_ROOT>/tools/sessions_dashboard.html
+    prompt: |
+      你是行途的「AI 协作会话大数据」采集分析助手。每日对 boss 与 AI（Claude Code 等）的【全部】历史会话做增量采集与主题/自媒体潜力分析，把结果累积进本地 DB 并刷新可浏览看板，为个人 IP 反哺提供数据底座。
+
+      【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用其他历史路径）。所有脚本、DB、看板一律读写该目录下的 `tools/`。
+
+      【输入源】
+      - 全量会话：`~/.claude/projects/**/*.jsonl`（金矿，含子代理会话）
+      - 素材库（用于交叉标记「已选题」）：`<WORKSPACE_ROOT>/github/xingtu-vault/02_素材库/对话挖掘/`
+      - 工具与 DB 落盘处：`<WORKSPACE_ROOT>/tools/`
+        - `sessions_analyzer.py`（采集+分析+生成 dashboard）
+        - 脚本跑完自动调 <WORKSPACE_ROOT>/github/xingtu-desk/tools/db.py sync（任务跑完即入库，2026-09-29 boss 定）
+        - `sessions_analysis.json`（累积 DB）
+        - `sessions_dashboard.html`（可浏览看板）
+      - Python：`<PYTHON>`
+
+      【执行步骤】
+      1) 跑分析器（增量，只解析 DB 里没有的新会话；带 --min-potential 55 控制看板门槛）：
+         `cd <WORKSPACE_ROOT>/tools && <PYTHON> sessions_analyzer.py --min-potential 55`
+         说明：首次或需要全量校准时加 `--rebuild`。脚本会自动扫描全部会话、逐会话打主题标签（AI工具链/自动化/部署运维/数据处理/前端UI/调试排错/方法论项目管理）、评自媒体转化潜力分(0-100)、交叉比对素材库标记「已选题/未选题」、累积写 DB、并生成单文件离线 dashboard。
+      2) 若脚本报错，不要中断：记录错误，改用 `find ~/.claude/projects -name "*.jsonl" -newermt "-2 days"` 兜底确认近期确有新会话，并在汇报里说明走了兜底。
+      3) 读取 DB 关键指标（用 python 读 `sessions_analysis.json`）：
+         - 总会话数、主会话数、高潜力(>=55)数、已转化为选题数、未选题高潜力数；
+         - 主题赛道分布；近 2 天新增会话数（按 `updated_at` 或文件 mtime 判断）。
+      4) 用中文向用户简短汇报：今日新增分析会话数、累积规模、高潜力未选题缺口数、主题分布概况、dashboard 路径。约束：仅本地汇总汇报，绝不对外发布或推送；不修改 ~/.claude/projects 与素材库任何文件（只读）。
+
+      【这是「广撒网→分析→沉淀」数据底座，与另一个任务（每日从 DB 挑高潜力未选题生成 1 篇素材）配合，共同反哺行途个人 IP。】
+
+  # ------------------------------------------------ T-WB-02
+  - slug: daily-trend-scan
+    id: 9993e140-d717-49b8-b034-fc3680befc0a
+    name: 每日舆情扫描与爆款选题推荐
+    status: ACTIVE
+    ring: L4
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=9;BYMINUTE=0
+      cron: "0 9 * * *"
+      human: 每天 09:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 并行 WebSearch 抓 24-48h AI 热点 → 与选题池/素材交叉匹配 → 5 维爆款打分出 Top3 → 产 HTML 舆情日报。
+    artifacts:
+      - <WORKSPACE_ROOT>/outputs/舆情日报_YYYY-MM-DD.html
+      - （跑完立即入库）<WORKSPACE_ROOT>/github/xingtu-desk/data/xingtu.db
+    prompt: |
+      这是行途自媒体工作区（根目录 <WORKSPACE_ROOT>）的每日舆情作战任务，产出今日舆情日报。
+
+      执行步骤：
+      1. 舆情采集：用 WebSearch 并行搜索（3-5 组查询）过去 24-48h AI 行业热点，覆盖：大模型新发布/降价/缓存价格、Agent 与 AI 编程工具链（Claude Code/OpenCode/Codex/WorkBuddy 等）、值得关注的 GitHub 开源项目、行业大事件。每组结果必须记录来源链接。
+      2. 素材匹配：读取选题池 SSoT「xingtu-vault/02_内容仓库 (Content Hub)/01_灵感与选题池/2026-选题池.md」，以及 outputs/ 下最新的「素材库时令性分析_*.json」（若存在）；把今日热点与既有选题/素材交叉匹配，热点必须能挂上已有素材或选题池编号（T-xxx），挂不上的标注「新热点·无素材储备」。
+      3. 爆款评分：对候选选题按 5 维打分并加权：时效性30%（<24h=5分/72h内=3/常青=1）、话题热度25%（搜索结果量级与头部覆盖）、素材匹配度20%、受众契合度15%（技术经理/Vibe Coder 关注工具链>模型新闻>资本新闻）、独家性10%（能否挂一手实测/账单/流水线）。输出 Top3。
+      4. 日历建议：读取发布日历 SSoT「xingtu-vault/03_运营工具箱 (Operations Toolkit)/」下的 00_全局发布日历_2026-09.md，对照 Top3 给出替换/补充/顺延建议，只建议不修改日历。若发现日历与发布日志排期矛盾，在日报中标注「待统一」。
+      5. 产出：单文件零依赖 HTML 日报（离线可开，行途蓝 #056DE8 主色），写入 <WORKSPACE_ROOT>/outputs/舆情日报_YYYY-MM-DD.html（用当天日期）。结构：今日热点（带来源链接）/ Top3 爆款选题（含 5 维分数与推荐理由）/ 日历调整建议 / 风险提示（素材缺口、待统一矛盾项）。所有数字标注来源。
+      6. 红线：不修改选题池（入库只能走 tools/topic_pool_pipeline.py）；不修改发布日历；不产出任何待发布稿件全文；不生成对外发布内容；最终发布决策留给 boss。
+
+  # ------------------------------------------------ T-WB-11（按时刻插入，编号=创建序号非排序号）
+  - slug: mp-data-review-daily
+    id: 9e14df60-0715-4796-bdfb-61d04b76db94
+    name: 行途公众号数据复盘·操盘手判断（每日 09:40）
+    status: ACTIVE
+    ring: L4
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=9;BYMINUTE=40
+      cron: "40 9 * * *"
+      human: 每天 09:40
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: >-
+      后顾式「数据复盘」——拉后台快照 → 事实/操盘手判断/假设对账/策略建议四段 → 推微信。
+      区别于 mp-daily-ops-report（前瞻式「发什么/怎么发」决策指令）：本任务不产出排期决策，
+      只回答「数据讲了什么、假设成立还是被推翻、策略要不要调」。
+    artifacts:
+      - <WORKSPACE_ROOT>/outputs/数据复盘_YYYY-MM-DD.md
+    notes: >-
+      2026-09-18 新建。动因：boss 要求「每天公众号数据复盘，作为资深操盘手结合数据有个自己的判断」。
+      背景：原 09:30 晨间决策日报自动化已在平台丢失且未登记入本档案，故「看数据→给判断」一度真空；
+      本任务与决策日报职责划清，不双份维护。核心增量＝冷启动样本量护栏（每条结论强制标 [信号强度]，
+      连续 3 天同向或数量级差异才可标强），防止 50 粉规模下把噪声当信号做策略转向。
+    prompt: |
+      在 <WORKSPACE_ROOT> 工作区执行「公众号每日数据复盘」，角色 = 资深全平台 IP 操盘手（先读根 AGENTS.md 确认含「行途」，再读 RULER.md 建立角色预设）。
+
+      【定位·务必厘清】本任务 = 后顾式「数据复盘」，不是前瞻式「发什么/怎么发」决策指令（后者归 .agents/skills/mp-daily-ops-report/SKILL.md，职责不重叠、不互相替代）。本任务只审视已有的真实数据：昨天和过去一个窗口到底发生了什么、验证了还是推翻了哪个假设、下一步策略要不要调。严禁写成"昨日新增 X / 阅读 Y"的流水账搬运，也严禁写成进度汇报。
+
+      【路径纪律·最高优先级】
+      - 工作区唯一根 = <WORKSPACE_ROOT>。所有读写路径一律锚定此绝对路径，禁止 cd 到其他根目录。
+      - 禁用残留目录 <HOME>/工作室/xingtu（与唯一根 inode 不同的旧副本，在其上执行 = 对着空壳干活且不报错）。
+      - 规模告警：执行前先 ls -l <WORKSPACE_ROOT>/data/stats_*.json。若最新快照不存在，或存在但体量远低于 15KB（正常约 18-20KB 量级），立即中止并以「数据规模异常·疑似跑错工作区或拉取失败」报错，不得基于残缺快照产出结论。
+
+      【执行五步】
+      1) 拉快照：cd <WORKSPACE_ROOT> && python3 tools/mp_stats_puller.py --pull
+         - 成功 → data/stats_YYYY-MM-DD.json（同日重跑覆盖）
+         - 两类典型失败：40164（IP 白名单，无自救）/ bsk 未登录（需 boss 打开 Chrome 登录 mp.weixin.qq.com）。失败则记录原因、跳过拉取、用现有最新快照继续，并在复盘顶部注明"数据截止 <日期>"。禁止循环重试轰炸。
+      2) 跑数据底座：python3 tools/mp_daily_report.py --days 7（产出 outputs/运营日报_YYYY-MM-DD.md）。本任务对它只读取消费、绝不改写覆盖；即使当日该文件已被别的管线占用也不重写。
+      3) 口径校准（关键，🔴 2026-09-18 实锤教训）：
+         - 证据等级排序：data/stats_*.json（bsk 只读后台发表记录）= 一级事实源 ＞ 发布日志/台账 ＞ 排期表。禁止把发布台账当凭证层用。
+         - 已实证事故：发布日志_2026-09.md 的 09-16/09-17/09-18 三行把「计划行」当「实际行」登记（真实应为 9/16 AGENT-03 阅读 133、9/17 FDE-07 阅读 78）。凡引用阅读/分享数字，必须从 stats 快照取；引用台账数字时须标注「台账口径·待后台校准」。
+         - 引用任何数字必须标注来源与口径，禁止把"平台记账/发布日志预估/排期推断"与后台真值混用而不加注。
+      4) 写 outputs/数据复盘_YYYY-MM-DD.md，四段结构（这是本任务的核心交付，自建独立文件，不写入上述运营日报）：
+         ① 事实层：昨日 + 近 7 天关键指标（阅读/分享/分享率/新增关注/总粉），只列对本复盘有解释力的数字，不铺全量表。必须标注数据截止日与取数来源。
+         ② 判断层（操盘手立言，本节不许空）：基于数据给出 2-3 条「我的判断」，每条格式 = 结论 → 数据依据 → 对下一步动作的含义。要求敢说别人看不出的东西（例：某篇分享率高但阅读低 = 内容被认可而分发未打开，是"渠道问题"不是"选题问题"）。禁止骑墙，禁止"需要进一步观察"式免责废话。
+         ③ 假设验证：把此前复盘或策略里明确提出过的假设逐条对账（成立 / 推翻 / 证据不足）并更新。若历史上没有成文假设，则本轮从②的判断里提炼 1-2 条可证伪假设写入，供次日对账。这是让复盘产生复利的关键，不许跳过。
+            - 已备的待验假设（可沿用对账）：FDE·Agent·大会现场线破百（均值约 128）vs 模型快讯线；同一事件连开多篇 = 负收益（9/11 B15 阅读 14、9/12 B16 阅读 2 已实锤）。请用新数据复核这两条是否仍成立。
+         ④ 策略调整建议：≤2 条，每条必须是可执行动作（含负责归口 skill 或工具），不是"建议加强"。最后给 ≤1 个待 boss 拍板的 A/B 选择题（禁开放式提问）。
+      5) 冷启动样本量护栏（必执行，防止把噪声当信号）：先读 <WORKSPACE_ROOT>/.workbuddy/memory/MEMORY.md 锚定账号当前阶段。当处在冷启动期（总粉 <500、日阅读量级在两位数到百级）时，必须在②判断层每条结论后显式标 [信号强度：强/中/弱]，并在文档顶部写明"样本量小，日间波动多为噪声，单日结论不作为策略转向依据"。指标需连续 3 天同向，或单篇对比差异达数量级，才可标"强"。另需按数据卫生规则先剔除亲友号与自有号的污染影响（口径文件 data/stats_exclusion_list.txt，存在则遵循）。
+         注意已实测的经验教训：速评/时效类稿件常在 24h 后才起量，勿凭几小时快照下定论。
+
+      【红线与边界】
+      - 全程只读：不改稿、不发布、不建草稿、不回填台账（台账回填需 boss 确认）。群发永远 boss 人工点。发现台账失真时只在复盘里提出建议，不擅自修改台账。
+      - 不得重复建设：碰到需要做"发什么/怎么发"决策、或跑 publish_brief / dispatch_feed / cover_next / track_c 自动成包等，一律交棒 .agents/skills/mp-daily-ops-report/SKILL.md，本任务不越界执行。
+      - 禁 rm；删除走 tools/safety/safe-delete.sh。
+      - 所有判断必须能追到具体数据（BUL-003）；编数字 = B-009 违例。
+      - 推送：产出后把②判断层 + ④策略建议的压缩版发到「我的微信」（首行写明数据截止日），让人在 30 秒内拿到判断，而不是拿到表格。
+
+      【完成判定·查凭证不问自述】
+      必须同时满足才算完成：1) stat -f '%Sm' <WORKSPACE_ROOT>/outputs/数据复盘_$(date +%F).md 的 mtime 是今天；2) 该文件含②判断层且每条有 [信号强度] 标注；3) 顶部写明数据截止日。脚本可能静默失败留下旧文件，务必核对 mtime，不冒充已生成。
+
+  # ------------------------------------------------ T-WB-03
+  - slug: wechat-tuitu-daily
+    id: a6d6442d-dca5-468e-89f5-bfe05fcdfe1c
+    name: 公众号贴图日更流水线
+    status: ACTIVE
+    ring: L3
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=10;BYMINUTE=0
+      cron: "0 10 * * *"
+      human: 每天 10:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 从已发长文提炼反直觉观点 → 生成「一图一观点」卡 → bsk 接管浏览器挂原文链接存草稿（**绝不发表**）。
+    artifacts:
+      - <WORKSPACE_ROOT>/outputs/贴图卡片_一图一观点/
+    external_side_effect: 写公众号草稿箱（需已登录浏览器态）
+    prompt: |
+      执行行途公众号「一图一观点」贴图日更（每天 1 条，存草稿不发表）。步骤：
+      1. 在 <WORKSPACE_ROOT> 工作空间，从未被做过的已发长文（源目录 xingtu-articles/articles/ 与 xingtu-articles/toolchain-practice/token-saving/，已做过的编号记录在 github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-公众号贴图流量与封面优化发布规划.md §7 决策记录里，接着往后编 #编号）提炼 1 个最反直觉/最有数据锚点的核心观点。
+      2. 用生成器出卡：python3 tools/tuitu_card_gen.py --num <编号> --big "<大字钩子，可含 <span class='accent'>>" --big-sub "<一句副标>" --title "<观点标题，可含 <br>>" --sub "<支撑句>" --quote "<金句>"（输出在 outputs/贴图卡片_一图一观点/）。风格铁律 P028：黑白极简、行途蓝 #056DE8、无 emoji、无 AI 腔。
+      3. 用 browser-skill 的 bsk（可执行文件在 ~/.local/bin/bsk，不在 PATH）接管已登录浏览器代填草稿，完整操作 SOP 见 skill「wechat-tuitu-publish」：navigate https://mp.weixin.qq.com/ → 首页「新的创作」→贴图 → drop 模式上传 PNG → 填标题（≤20字）与描述（≤300字+2-4个#标签）→ 链接挂对应原文文章 → 确认「平台推荐已开启」→ 点「保存为草稿」，【绝对禁止点发表】，发表永远由 boss 人工决定。
+      4. 若浏览器未登录/掉登录态，用 bsk request-help 提示 boss 扫码，不要自己想办法绕。
+      5. 收尾：用 bsk session stop 关会话；回写 CHANGELOG（python3 tools/changelog_append.py --type "🆕" --path "outputs/贴图卡片_一图一观点/" --desc "..." --tool workbuddy）；在 spec github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-公众号贴图流量与封面优化发布规划.md §7 追加一行决策记录（编号、源文章、卡文件名）；最后回复 boss 一句话：今日卡预览路径 + 草稿已就位待发表。
+
+  # ------------------------------------------------ T-WB-04
+  - slug: ai-collab-miner-daily
+    id: automation-1786945815343
+    name: AI协作对话挖掘·每日1素材
+    status: ACTIVE
+    ring: L2
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=14;BYMINUTE=30
+      cron: "30 14 * * *"
+      human: 每天 14:30
+    cwd:
+      - <WORKSPACE_ROOT>/tools
+    purpose: 从当日 AI 协作会话里挑 rank=1，精读后产 1 篇结构化选题素材（10 小节模板）落 vault。
+    artifacts:
+      - <WORKSPACE_ROOT>/github/xingtu-vault/02_素材库/对话挖掘/YYYY-MM-DD_选题素材.md
+      - <WORKSPACE_ROOT>/github/xingtu-vault/02_素材库/对话挖掘/YYYY-MM-DD_对话挖掘.md
+      - （跑完立即入库）<WORKSPACE_ROOT>/github/xingtu-desk/data/xingtu.db
+    prompt: |
+      你是行途的内容挖掘助手。每天从 boss 与 AI（Claude Code 等）的协作痕迹里，提炼 1 篇可用于起号/图文/视频/文章创作的"选题素材"，落进行途素材库。全流程仅本地读写，绝不对外发布或推送。
+
+      【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用其他历史路径）。
+
+      【输入源】
+      - 协作会话：`<HOME>/.claude/projects/*.jsonl`（逐轮对话，金矿）
+      - 实践产出：`<HOME>/projects`（近期改动文件）
+      - 素材库（落盘处）：`<WORKSPACE_ROOT>/github/xingtu-vault/02_素材库/对话挖掘/`
+      - 脚本目录：`<WORKSPACE_ROOT>/tools/`
+      - Python：`<PYTHON>`
+
+      【执行步骤】
+      1) 运行挖掘器（增量，自上次运行以来）：
+         `cd <WORKSPACE_ROOT>/tools && <PYTHON> ai_collab_miner.py`
+         若脚本报错，不要中断：记录错误，手动用 `find <HOME>/.claude/projects -name "*.jsonl" -newermt "-2 days"` 兜底找近期会话，继续第 3 步。
+      2) 读取候选：`<WORKSPACE_ROOT>/tools/collab_miner_candidates.json`。
+      3) 若无 candidates（空数组）：说明"今日无达到阈值的新协作素材"，确认 `对话挖掘/` 下已生成当日 `YYYY-MM-DD_对话挖掘.md` 日志，向用户简短汇报即可，**结束**。
+      4) 否则从 candidates 中选 rank=1 的那条（若该条标题已在素材库 .md 出现导致重复，顺延选下一条未重复的）。取其 `source_path`（会话 jsonl）。
+      5) 精读原始会话抽取真实信号（控制体量，勿整文件倾倒）：运行 python 从 `source_path` 提取 —— aiTitle、用户文本指令（前 8 条，去重）、assistant 可读文本块（跳过 thinking/tool_use，截取关键方案，总量 ≤ 4000 字）。若 candidate 的 `files_written`/`files_edited` 中存在 ≤50KB 且可读的文本文件，可读前 1–2 个提取硬事实（不要暴露业务数据）。
+      6) 结合提取的真实信号 + 你对 AI 工具链（harness/Claude Code/MCP/Agent）的通用知识，综合**1 篇结构化选题素材**。严格遵循下方模板，写入：
+         `<WORKSPACE_ROOT>/github/xingtu-vault/02_素材库/对话挖掘/YYYY-MM-DD_选题素材.md`
+         （YYYY-MM-DD 用当天日期；若同日已存在则覆盖）
+
+      【素材模板（每篇都要有这些小节）】
+      # 选题素材 · <标题>
+      > 状态：待写 ｜ 来源：<日期> 对话挖掘 Top<rank>（评分 <score>）｜ 来源会话：<source_path> ｜ 项目上下文：<project> ｜ 标签：<tags>
+      1. 一句话选题（核心观点）
+      2. 为什么说它值得做（利他价值 / 对准谁）
+      3. 关键词布局（搜一搜 SEO：核心词 + 2–3 长尾词 + 密度建议）
+      4. 平台适配（公众号/掘金/CSDN/视频号 各自切入角度、标题风格、备注，用表格）
+      5. 标题备选（3–5 个，含 SEO 词）
+      6. 内容大纲（文章结构 / 视频分镜）
+      7. 配图 / 视频脚本提示（生图方向 / 信息图 / 录屏素材）
+      8. 可直接引用的真实素材（只写从会话/文件真实提取到的硬事实，标注内部可溯源路径；不得编造数据、代码、引语）
+      9. 风险 / 边界（不能写 / 需打码的内容，尤其企业项目业务细节、内部路径不外发）
+      10. 下一步（勾选清单）
+
+      【硬约束】
+      - 真实事实必须可追溯；不得编造会话里没有的指标、代码、引语。
+      - 成本意识：会话抽取脚本务必加长度上限，严禁倾倒数十 MB 原文。
+      - 仅本地：不发布、不推送、不改 projects/.claude 任何文件（只读它们的内容）。
+      - 若今日无新素材，也要保证 `YYYY-MM-DD_对话挖掘.md` 留痕。
+
+      【汇报】
+      用中文向用户简短汇报：今日候选数、最终选定选题标题、素材文件路径、是否首次/增量。若走兜底路径也说明。
+
+  # ------------------------------------------------ T-WB-05
+  - slug: daily-publish-flywheel
+    id: automation-1787754681498
+    name: 行途每日发布飞轮·分层选题
+    status: ACTIVE
+    ring: L2
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=19;BYMINUTE=0
+      cron: "0 19 * * *"
+      human: 每天 19:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 从素材库按分层模型（时效抢发/深度精工/长尾常态）挑主卡+备选，给可开工的选题包（标题/大纲/配图/脱敏/时段）+ 时效债清单。
+    artifacts:
+      - 对话内输出（不落文件）
+    prompt: |
+      你是行途（XingTu）自媒体的每日发布飞轮。任务：从素材库挑今天的发布选题并给出可开工的草稿要点。
+
+      【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用其他历史路径）。
+
+      步骤：
+      1) 读取素材库 SSoT：`<WORKSPACE_ROOT>/素材库/materials_library.json`（cards 数组，字段含 tier/publish_priority/days_left/audience/publish_angle/screenshot_suggest/desensitize/status 等）。
+      2) 只看 status=在架 的卡，按分层模型挑卡：主卡 = tier=时效抢发 且 publish_priority 最高者（若无时效抢发卡，取 publish_priority 全局最高）；备选 = tier=深度精工 且 publish_priority 最高者（若无则取长尾常态最高）。
+      3) 对主卡和备选各输出：卡片标题与 id、发布角度（卡片 publish_angle 基础上优化）、两个标题草稿（公众号版 ≤15 字防折叠、掘金版 10-20 字禁寒暄）、三段式大纲（痛点钩子→核心干货→行动清单）、配图建议（基于卡片 screenshot_suggest 细化为 1 张主图+2 张配图的具体画法）、脱敏等级提醒（desensitize=高 时强调发布前必须泛化所有内部名/单号/数据，desensitize=中 提醒泛化项目代号）、适配平台与建议发布时段（公众号 20-21 点、掘金/知乎午+晚）。
+      4) 附「时效债清单」：所有 days_left≤30 的在架卡（id+标题+剩余天数），过期卡标注「已过期：复核数据后重铸或下架」。
+      5) 结尾一句提醒：绝不发布涉及当前公司的内部信息；发布操作只在下班后进行。
+      6) 若素材库 JSON 解析失败或卡片数明显异常（正常 1000+ 卡），立即报告「素材库异常」并给出具体错误，不要基于残缺数据挑选题。
+
+      全部输出为简洁中文，直接在对话中给出，不写文件。
+
+  # ------------------------------------------------ T-WB-06
+  - slug: opensource-matrix-weekly
+    id: 8dc7cc66-f7e2-4fa6-96f0-40d99957cfc1
+    name: 开源矩阵日巡检（全仓健康度+隐私复扫+已发布文章+Skills+Harness跟进）
+    status: ACTIVE
+    ring: L3
+    schedule:
+      rrule: FREQ=WEEKLY;BYDAY=WE;BYHOUR=21;BYMINUTE=0
+      cron: "0 21 * * 3"
+      human: 每周三 21:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 24 个开源仓的唯一自动化防线——隐私复扫（SAF-010）+ 未提交未推送 + 门面一致性 + 子模块指针 + 内容缺口，产 HTML 报告。
+    artifacts:
+      - <WORKSPACE_ROOT>/outputs/开源矩阵巡检_YYYY-MM-DD.html
+    prompt: |
+      对行途 GitHub 开源矩阵（19 公开仓 + 5 私有仓）做每周健康度巡检，产出单文件 HTML 报告。这是矩阵目前唯一一道自动化防线——没有它，24 个仓全靠人工记得。
+
+      【路径纪律】工作空间唯一根目录 `<WORKSPACE_ROOT>`。仓库本地副本在 `<WORKSPACE_ROOT>/github/*` 与 `<WORKSPACE_ROOT>/md2wechat/`。
+      【工具纪律】`gh` 实体在 `/opt/homebrew/bin/gh`（不在 PATH），需先 `export TOKEN=$(printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain get | awk -F= '/^password/{print $2}')` 再 `GH_HOST=github.com GH_TOKEN="$TOKEN" /opt/homebrew/bin/gh ...`。**github.com 的 SSH 不通**，push 一律走 HTTPS 或 `tools/gh_push_api.py`（走 Contents API，自动跳过相同文件，用法 `python3 tools/gh_push_api.py <目录> <owner/repo> [--dry-run]`）。
+
+      【巡检项】
+      1) **隐私复扫（最高优先级）**：`python3 tools/privacy_scan.py`（规则 15 条分级：🔴致命/🟠高危/🟡提示）。🔴 项必须当场修掉并 commit；修不了的写入报告「待 boss 拍板」。
+         重点复检：中文真名与拼音、英文名 `英文名 Li` 及变体（SAF-010 已裁决全面禁用）、客户名、内部项目代号、金额/人天、在职自述、内部运营文档。
+      2) **未提交/未推送**：逐个仓 `git status --porcelain` 与 `git log @{u}..HEAD`，列出有残留的仓与改动摘要。有改动的提示补 commit（不要自动 commit）。
+      3) **门面一致性**：公开仓 README 是否都有「关于作者」区块（公众号「行途」钩子）与 License 段；`github/xingtu1996/README.md` 的开源矩阵是否覆盖全部公开仓（当前 19 个）。
+      4) **子模块指针**：`github/xingtu-harness` 的 6 个子模块是否停在旧 gitlink（曾出现过：clone 下来拿到旧子仓）。落后则提示同步。
+      5) **内容缺口**：`github/xingtu-articles` 的 README 索引是否覆盖 articles/ 下全部 md；`tuitu/` 是否有新增贴图未归档。
+      6) **已发布归档**：检查 `github/xingtu-vault/09_个人台账/03_已发布文章档案/` 有无新增发布记录未同步到 articles 仓。
+
+      【产出】
+      - 单文件零依赖 HTML 报告写入 `<WORKSPACE_ROOT>/outputs/开源矩阵巡检_YYYY-MM-DD.html`（行途蓝 #056DE8 主色，离线可开）
+      - 结构：总览健康度评分 / 🔴 必修项（含具体文件与行）/ 各仓状态表 / 内容缺口 / 待 boss 拍板项
+      - 回写 CHANGELOG：`python3 tools/changelog_append.py --type "🔧" --path "github/*" --desc "..." --tool workbuddy`
+
+      【红线】
+      - 不自动 push（除非 boss 已批准的具体修复）、不改仓库可见性、不 force push、不删仓库
+      - 隐私修复属于止损动作，可直接执行并 commit（但**不自动 push**，在报告里列出待推送清单）
+      - 结尾给 boss 一句话结论 + 需要他拍板的项（用表格，给出推荐项）
+
+  # ------------------------------------------------ T-WB-07
+  - slug: materials-library-weekly-refresh
+    id: automation-1787646091698
+    name: 行途素材库每周刷新（L3·遵循素材挖掘Skill）
+    status: ACTIVE
+    ring: L3
+    schedule:
+      rrule: FREQ=WEEKLY;BYDAY=SU;BYHOUR=21;BYMINUTE=0
+      cron: "0 21 * * 0"
+      human: 每周日 21:00
+    cwd:
+      - <WORKSPACE_ROOT>          # ← 2026-09-14 修正（原误指残留目录）
+    purpose: 跑素材库生成器（11 源目录增量拆卡）→ **强制零泄漏脱敏校验** → 确认看板占位符已替换。
+    artifacts:
+      - <WORKSPACE_ROOT>/素材库/materials_library.json
+      - <WORKSPACE_ROOT>/素材库/素材看板.html
+    history:
+      - "2026-09-14: cwd 与 prompt 内路径由 <HOME>/工作室/xingtu 修正为 <WORKSPACE_ROOT>；
+         并补入【路径纪律】段 + 卡片数规模告警（原 prompt 缺，导致在残留区跑出 12 卡而不报错）"
+    prompt: |
+      你是行途素材库的 L3 维护器。遵循 **`ai-session-material-miner` Skill** 的方法论执行（核心：从 AI 会话/源目录采集 → 识别可发布颗粒 → 三级脱敏 → 入库 → 检索）。
+
+      【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用 `<HOME>/工作室/xingtu` 等历史残留路径）。
+
+      【执行】
+      1) 运行生成器（自读全部源目录，增量纳入新文件并拆细粒度卡）：
+         `cd "<WORKSPACE_ROOT>" && <PYTHON> tools/materials_library_gen.py`
+      2) 跑完后**强制脱敏校验**（零容忍）：用 python 读 `素材库/materials_library.json`，
+         检查发布字段（title/summary/tags/search_keywords/publish_angle/why_publish/
+         ai_note/screenshot_suggest）是否含内部名：FS-/某零售重构项目/某零售集团/某零售平台/京东/内部协作系统/
+         内部系统代号/客户项目名/真实姓名及拼音（均已按类别泛化）。
+         若泄漏数 > 0，**立即报错并中止汇报**，提示需人工复查 sanitize() 规则。
+      3) **规模告警（必须先于汇报执行）**：读 `素材库/materials_library.json` 的 cards 长度。
+         正常规模为 **1000+ 卡**（2026-09-14 基线 1466 卡）。若 < 500，判定为「跑错工作目录或源目录缺失」，
+         **立即中止并向 boss 报错**，指明实际 cwd 与 cards 数，不得在残缺数据上汇报「刷新完成」。
+      4) 确认看板 `素材库/素材看板.html` 占位符 __DATA__/__GEN__ 已替换、含 JSON-LD(CollectionPage)。
+
+      【入库口径（Skill 规范）】
+      - 源目录：内部代码仓/内部工程平台 的 .claude/{templates,research,specs,incidents,memory,plans}
+        + gi-doc/tenant-mgmt + 某售前项目（共 11 源）。incidents/memory/plans 不读正文，仅抽主题。
+      - 脱敏三档：低（公开方法论）/中（泛化项目代号）/高（incidents·memory·plans）/极高（某售前项目 仅方法论外壳）。
+      - 细化拆分：research 按 H2 拆卡、数据密集 research 拆多卡、templates 各成 1 卡。
+
+      【衔接（消除割裂）】
+      本任务属 L3。另两套：L1 `sessions_analyzer.py`（DAILY 02:00 广撒网打标）、
+      L2 `ai_collab_miner.py`（DAILY 14:30 每日1选题）。若发现 `/projects/*/.claude`
+      项目级痕迹未被 `discover_ai_sources.py` 覆盖（盲区），在汇报中提示可扩展。
+
+      【汇报】中文简短：本次新增/更新卡片数、总卡片数、高脱敏卡数、脱敏校验结果（必须 0 泄漏）、
+      高频关键词变化、是否与 L1/L2 同步。
+
+  # ------------------------------------------------ T-WB-08
+  - slug: monetization-flywheel-weekly
+    id: automation-1787753469338
+    name: 行途·变现驱动内容飞轮
+    status: ACTIVE
+    ring: L4
+    schedule:
+      rrule: FREQ=WEEKLY;BYDAY=SU;BYHOUR=22;BYMINUTE=0
+      cron: "0 22 * * 0"
+      human: 每周日 22:00
+    cwd:
+      - <WORKSPACE_ROOT>          # ← 2026-09-14 修正（原误指残留目录）
+    purpose: 技能匹配 → 跑 L1/L2/L3 脚本取数 →「变现驱动」反推本周 TOP5 发布序列 → 周报 + 效率埋点。
+    artifacts:
+      - <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮周报_<日期>.md
+      - <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮运行日志.jsonl
+    history:
+      - "2026-09-14: cwd 与 prompt 内全部路径由 <HOME>/工作室/xingtu 修正为 <WORKSPACE_ROOT>。
+         实害已发生：2026-09-13 的周报落在残留目录 outputs/内容战略分析/ 下（主区看不到）。"
+    prompt: |
+      你是行途（XingTu）自媒体内容战略自动化引擎。本轮任务目标：基于既有素材库与平台变现规则，产出一份「变现驱动」的本周投稿排期，并把新素材萃取到主库。请严格按以下动态工作流执行：
+
+      【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用 `<HOME>/工作室/xingtu` 等历史残留路径）。
+
+      1. 【技能匹配】先用 find-skills 能力（或 `Skill` 工具 command "find-skills"）检索当前是否有可辅助"选题挖掘/内容蒸馏/多平台分发/受众分析"的新技能；若有匹配且未安装，列出候选并说明用途（不要自动安装，交 Boss 决策）。
+
+      2. 【摄取与蒸馏（已自动化，调用既有脚本）】按顺序执行工作空间既有工具（路径在 <WORKSPACE_ROOT>/tools/）：
+         - 运行 `ai_collab_miner.py`（每日增量扫描 AI 协作会话，挑 Top 候选）
+         - 运行 `project_indexer/indexer.py`（索引 <HOME>/projects 实践素材）
+         - 运行 `materials_library_gen.py`（源目录→结构化素材卡+看板，三级脱敏）
+         若脚本缺失或报错，记录缺口并继续下一步，不要中断。
+
+      3. 【选题反推（核心·变现驱动）】读取以下输入后，做「变现驱动」而非「价值分级」排序：
+         - <WORKSPACE_ROOT>/素材库/黄金会话萃取_2026-08-26.md（G1–G6 P0 选题）
+         - <WORKSPACE_ROOT>/素材库/博文骨架库.md（B01–B12）
+         - <WORKSPACE_ROOT>/.workbuddy/memory/MEMORY.md（变现路径 §4 / 分发 §2 / 出海 §5 / 战略刷新 §9）
+         - 受众分层原则：L0泛职场/ L1入门小白/ L2开发者/ L3技术经理/ L4想做IP的技术人
+         排序硬指标：①对齐变现目标人群(30–35迷茫程序员职业/面辅 + 想做IP的人 + 2B决策)；②快速起量蓄水(破圈L1/L0)；③广告型横评优先招商。
+         参考本次已生成的重排序列：B06→S05→G6→B02→B09 前置（直变现+职业人群+广告+破圈），纯L2纵深后移。
+         产出：本周 TOP5 发布序列（选题+目标受众层+主发平台+变现钩子+对应素材卡ID）。
+
+      4. 【反哺校验】若公众号 AppID/Secret 已配置（tools/wechat_audience_config.json 存在），运行 wechat_audience_puller.py 拉实测粉丝画像，对照推断画像修正选题假设；否则跳过并记录"待 Boss 配密钥"。
+
+      5. 【产出】把本轮结果写入 <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮周报_<今天日期>.md（含：新萃素材数、本周TOP5排期、待补内容缺口、广告植入是否超每周≤1次红线、SAF-003下班后发布提醒）。同时在对话框给 Boss 一句话结论 + TOP3 选题。
+
+      6. 【红线】绝不在产出中编造平台门槛/费率（标"需复核"）；发布动作不自动执行（仅排期）；所有对外内容须走 desensitize 合规闸门后才可发。
+
+      7. 【效率埋点（观测契约）】本轮执行的每个环节（含每个子 agent / 每次脚本调用），完成后立即向 <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮运行日志.jsonl 追加一行 JSON（用 Bash 追加，UTF-8，字段：ts、phase、agent、startedAt、finishedAt、outputChars、success，时间戳用 date +%s000 取毫秒值）。全部环节结束后，运行 <PYTHON> <WORKSPACE_ROOT>/tools/flywheel_monitor.py 刷新效率看板，并在周报末尾引用本期「并行加速比、成功率、总产出字数」三个数。
+
+  # ------------------------------------------------ T-WB-09
+  - slug: workspace-batch1-housekeeping
+    id: 88349fe3-2885-491a-b154-98b4a44d4873
+    name: 工作空间收纳批次1-待会话安静后执行
+    status: PAUSED
+    ring: L5
+    effective_state: 已失效（validUntil 2026-09-07 00:00 早于当前；且属一次性任务，不适合 recurring 载体）
+    schedule:
+      rrule: FREQ=HOURLY;INTERVAL=1
+      cron: "0 * * * *"
+      human: 每小时（原意：等会话安静后抢一次窗口）
+      valid_from: "2026-09-06T14:05"
+      valid_until: "2026-09-07T00:00"
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 一次性收纳（8 目录 + 5 文件归档、空物 safe-delete、看板迁 outputs）。**已被其他会话以变体方案实际执行**（见 note）。
+    note: >-
+      收纳结果可验证：`_archive/学习资料/` 下已有 learning、06_个人知识库_Obsidian；`_archive/低频项目/` 有 demo-project。
+      但 spec 指定的标记文件 `_archive/2026-09-06_根目录收纳/.batch1_done` **不存在**，该目录也未创建——
+      说明实际执行走的是另一套目录分区（学习资料/低频项目/临时文件/旧看板），与本 prompt 写的目标路径不一致。
+      本自动化已 PAUSED + 过期，无复活价值；保留仅为留痕。
+    history:
+      - "2026-09-14: 判定失效并归档。若日后要重跑收纳，应新建一次性任务并重写目标路径，勿直接复用本条。"
+    prompt: |
+      【背景】boss 已于 2026-09-06 授权执行 xingtu 工作空间收纳批次 1（归档收纳），但要求等并行 AI 会话结束后再动文件。方案 SSoT = <WORKSPACE_ROOT>/github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-工作空间收纳与GitHub化管理/（00_README.md §6 v2 修正 + 04_执行清单与红线.md 批次 1）。
+
+      【步骤 0 · 安静检测（不满足则本轮直接结束，输出等待报告，不做任何文件操作）】
+      运行：find <HOME>/.workbuddy/projects -name "*.jsonl" -mmin -12 2>/dev/null | wc -l
+      若结果 > 1（说明除本会话外还有活跃会话在写入），输出"仍有 N 个活跃会话，本轮跳过"并结束。
+      若结果 <= 1，视为安静，继续执行。
+      另：若 <WORKSPACE_ROOT>/_archive/2026-09-06_根目录收纳/.batch1_done 已存在，说明已执行过，输出"批次1已完成，无需重复"并结束。
+
+      【步骤 1 · 备份】运行 bash <WORKSPACE_ROOT>/tools/safety/backup-before-op.sh（按脚本自身用法）。若脚本执行失败，停止并报告，不得继续。
+
+      【步骤 2 · 建归档目录】mkdir -p "<WORKSPACE_ROOT>/_archive/2026-09-06_根目录收纳/目录" "<WORKSPACE_ROOT>/_archive/2026-09-06_根目录收纳/文件"
+
+      【步骤 3 · 归档目录（全部用 mv，禁 rm）】在 <WORKSPACE_ROOT> 下执行 mv，源→_archive/2026-09-06_根目录收纳/目录/：
+      xingtu_backup_20260819、demo-project、draft_8a7cdaee_folder、06_个人知识库_Obsidian、opensource、learning、.idea_根目录、.workbuddy_根目录备份
+      （learning 整目录原样归档零删除，后续再人工并入 vault 11_经历素材库）
+      注意 .idea/.workbuddy 开头的是隐藏目录，mv 时保留原名。
+
+      【步骤 4 · 归档散落文件】mv → _archive/2026-09-06_根目录收纳/文件/：
+      "Test Message Exchange Between User and Assistant.md"、a.txt、usage-logs-1787106047537.xlsx、opensource-checklist.md、README_工作室根.md
+
+      【步骤 5 · 空目录/空文件走安全删除】bash <WORKSPACE_ROOT>/tools/safety/safe-delete.sh <WORKSPACE_ROOT>/open 和 bash <WORKSPACE_ROOT>/tools/safety/safe-delete.sh <WORKSPACE_ROOT>/2026-08-21.md（二者均为空；若 safe-delete.sh 用法不同，先读脚本头部说明再调用；绝不用 rm）。
+
+      【步骤 6 · 迁移（不归档）】
+      mv "信息员盘点与历史会话分析_2026-08-25.html" "受众实测画像_示例.html" "受众画像与内容盘点分析_2026-08-25.html" "连接器准备清单_2026-08-25.html" "行途任务进度看板_2026-08-20.html" → outputs/
+      mv publish.sh publish-public.sh → tools/
+      mv .resume_2026-09-03_断点续传.md → github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260902-断点续传与集中提示词/
+      mv 四大AI工程研读 → "xingtu-vault/07_调研与情报工作台/"
+
+      【红线】只 mv 不 rm（空物走 safe-delete）；除步骤 6 中移入 xingtu-vault/07 的一项外不碰 xingtu-vault 其他内容；不碰 xingtu-articles；不做任何 git commit/push（GitHub 留档留给有监督的会话执行）；移动失败立即停止并报告已完成/未完成清单，不重试失败项。
+
+      【步骤 7 · 收尾回写】
+      a) 写标记文件 _archive/2026-09-06_根目录收纳/.batch1_done
+      b) 运行 python3 <WORKSPACE_ROOT>/tools/changelog_append.py --type "♻️" --path "_archive/2026-09-06_根目录收纳/" --desc "批次1归档收纳执行：8目录+5文件归档、2空物safe-delete、5看板迁outputs、publish脚本迁tools、断点续传resume迁github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260902、四大AI工程研读迁vault/07；移动前引用扫描已确认零引用，backup-before-op已快照" --tool workbuddy
+      c) 在 <WORKSPACE_ROOT>/DIRECTORY.md 顶部说明区之后合适位置补一行登记（归档位置说明），在 产出索引.md 2026-09-06 表末尾补一行登记 5 个迁入 outputs 的看板。
+      d) 向 boss 输出执行报告：成功移动清单（源→目标）、safe-delete 结果、回写结果、遗留事项（GitHub 留档待有监督会话执行、learning 待并入 vault 11、xingtu_backup_20260819 观察期 30 天后再议清理）。
+
+  # ------------------------------------------------ T-WB-10
+  - slug: cloud-ai-news-summary
+    id: cloud:1937308
+    name: 生成昨日 AI 重点资讯总结
+    status: PAUSED
+    ring: —
+    effective_state: 云端（host-managed）任务，非本工作空间资产；prompt 为单句，无 cwd、无产物落盘
+    schedule:
+      rrule: ""
+      cron: ""
+      human: 未记录（云端侧配置）
+    cwd: []
+    purpose: 汇总昨日 AI 重点资讯，输出简洁摘要报告。
+    artifacts: []
+    note: >-
+      该条由云端托管，本地无法读取其排期与产物路径，也无法通过 automation_update 完整迁移。
+      与 T-WB-02「每日舆情扫描」职能高度重叠（都是 AI 资讯汇总），但 T-WB-02 有选题池挂载、
+      5 维打分与 HTML 日报落盘——**能力严格劣于 T-WB-02**。建议：确认无其他依赖后直接停用，不必迁移。
+    prompt: |
+      请帮我汇总昨日 AI 重点资讯，输出一份简洁的摘要报告。
+
+  # ------------------------------------------------ T-LA-01（2026-09-30 新增）
+  - slug: ops-feed-daily-push
+    id: workbuddy:a5f76873-2439-4abd-ad50-2d4df5fb32f3 / launchagent:com.xingtu.opsfeed.daily
+    name: 定时任务产出·每日滚动推送GitHub（ops_feed_sync）
+    status: ACTIVE
+    ring: L1
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=23;BYMINUTE=30
+      cron: "30 23 * * *"
+      human: 每天 23:30（双调度：WorkBuddy automation + LaunchAgent，脚本幂等防重）
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 白名单收集 14+ 定时任务的每日滚动产出（舆情日报/数据复盘/巡检/贴图卡/stats 等）→ 推 xingtu-vault 仓 `定时任务产出/` → 供云端 Agent 接手。
+    artifacts:
+      - <WORKSPACE_ROOT>/github/xingtu-vault/定时任务产出/
+      - <WORKSPACE_ROOT>/tools/ops_feed_sync.log
+    history:
+      - "2026-09-30: 新建。动因：doubao 09-30 凌晨入库是一次性快照，滚动产出断流；boss 拍板「vault 子目录 + 全量推 private」。"
+      - "⚠️ 2026-09-30 实测：本会话 launchctl bootstrap 整体不可用（I/O error 5，连已知任务重装也失败），LaunchAgent 已落盘但需下次登录才加载；在此之前由 WorkBuddy automation 单跑。com.xingtu.desk.daily 对照实验中被卸载，同样待登录恢复。"
+
+  # ------------------------------------------------ 盘点备注（2026-09-30 WorkBuddy 日志实测，档案待补条目）
+  # 平台实际在跑但本档案未登记的 5 个：
+  #   · 行途工作台·每日数据同步（7ec3cffb）→ 产物 github/xingtu-desk（仓内）
+  #   · 免费算力实践日刊（584e5ed0，每日09:00）→ outputs/免费算力日刊/；⚠️ 连续 429 quota 失败
+  #   · 技能库每周体检 checkup（580a2822）→ outputs/技能库体检报告_*.html
+  #   · GitHub文章回流公众号·每周1篇（4db37608）→ 产出路径待补录
+  #   · MEM考研·每日学习打卡（3a5cc2f3）→ 提醒类无落盘
+  # 另：每日舆情扫描与贴图流水线存在双 id 漂移（9993e140/e3880a98、a6d6442d/ac231f80），疑似平台侧重复登记。
+
+  # ------------------------------------------------ T-WB-19（2026-10-12 新增）
+  - slug: toolbelt-weekly-scan
+    id: b72461e8-0bfe-493b-be75-5156aa6ff45f
+    name: 云中立工具带每周盘点
+    status: ACTIVE
+    ring: L2
+    schedule:
+      rrule: FREQ=WEEKLY;BYHOUR=10;BYMINUTE=0
+      cron: "0 10 * * 1"
+      human: 每周一 10:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: >
+      只读扫描全机 AI 工具生态（~25 签名），统计技能安装/数据量/会话/活跃，
+      检测跨工具同名技能版本漂移与僵尸，产出 JSON 台账 + 单文件 HTML 看板，
+      落入公开仓 xingtu-cloud-neutral 的 inventory/ 并本地 commit；有实质变动时
+      经 Data API 推送并出微信推送卡草稿。公开产出只含聚合数字与泛化路径
+      （结构模式 + 外挂红线词表双门禁，0 命中才落盘）。
+    artifacts:
+      - <WORKSPACE_ROOT>/data/toolbelt_inventory.json
+      - <WORKSPACE_ROOT>/outputs/云中立工具带盘点_<日期>.html
+      - <WORKSPACE_ROOT>/github/xingtu-cloud-neutral/inventory/toolbelt_inventory.json
+      - <WORKSPACE_ROOT>/github/xingtu-cloud-neutral/inventory/<日期>.html
+    public_mirror: github/xingtu-cloud-neutral/automations/toolbelt-weekly-scan.yaml（占位符路径版）
+    prompt: |
+      （全文见公开仓 mirror + 平台侧；执行要点：cwd=工作区根 → 跑 toolbelt_scan.py --redline-file <WORKSPACE_ROOT>/.redline_words.txt → 复制产出进 inventory/ → 增量对比六指标 → 本地 commit → 有变动走 tools/github_data_push.py 推送 → 汇报六指标+环比+漂移Top3，有实质变动另出微信推送卡草稿落 outputs/ 不发送。）
+      【红线】只读；禁读会话正文；禁出现真名/雇主代号/绝对个人路径/词表内容本身。门禁拒写（exit 2）立即停，不绕过。
+
+  # ------------------------------------------------ T-CC-01~03（Claude Code 侧 scheduled_tasks）
+  - slug: yuanbao-archive
+    id: T-01
+    name: 元宝会话自动化抓取入库
+    status: ACTIVE
+    platform: claude-code
+    schedule:
+      cron: "45 7 * * *"
+      human: 每天 07:45
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 定时抓取转发给元宝的新内容 → 解析原稿 → 蒸馏提炼 → 入库素材库，供内容创作取用。
+    artifacts:
+      - <WORKSPACE_ROOT>/素材库/（增量卡片）
+    note: 完整 spec（prompt 全文）在私有 registry .harness/scheduled/yuanbao-archive/spec.md
+
+  - slug: session-archive
+    id: T-02
+    name: 会话归档入库（session-sediment）
+    status: ACTIVE
+    platform: claude-code
+    schedule:
+      cron: "0 20 * * 0"
+      human: 每周日 20:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 定期扫描本地所有 AI 会话记录，蒸馏有价值内容（决策链/踩坑/可复用方法/金句/选题灵感）为素材卡归档入库。
+    artifacts:
+      - <WORKSPACE_ROOT>/素材库/（会话蒸馏卡片）
+    note: 完整 spec 在私有 registry .harness/scheduled/session-archive/spec.md
+
+  - slug: knowledge-payment-reminder
+    id: T-03
+    name: 知识付费冷启动周提醒
+    status: ACTIVE
+    platform: claude-code
+    schedule:
+      cron: "15 21 * * 0"
+      human: 每周日 21:15
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 每周提醒推进知识付费冷启动计划（验证 + 建信任），防止长期项目被日常发布节奏淹没。
+    artifacts:
+      - <WORKSPACE_ROOT>/outputs/（提醒卡）
+    note: 完整 spec 在私有 registry .harness/scheduled/knowledge-payment-reminder/spec.md
+
+  # ------------------------------------------------ T-WB-20（2026-10-12 补登：平台有而 registry 漏）
+  - slug: mem-exam-daily-reminder
+    id: 3a5cc2f3-13a1-4a9a-a72f-6e5c5cde5c29
+    name: MEM考研·每日学习打卡提醒与记录（21:00学习档）
+    status: ACTIVE
+    platform: workbuddy
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=20;BYMINUTE=45
+      cron: "45 20 * * *"
+      human: 每天 20:45
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 每日学习打卡提醒与进度记录（学历提升线，与内容飞轮并行的长期项目）。
+    artifacts:
+      - <WORKSPACE_ROOT>/outputs/（打卡记录）
+    note: prompt 全文待从平台导出回填私有 registry
