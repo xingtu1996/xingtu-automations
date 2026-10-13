@@ -383,7 +383,7 @@ automations:
          `cd "<WORKSPACE_ROOT>" && <PYTHON> tools/materials_library_gen.py`
       2) 跑完后**强制脱敏校验**（零容忍）：用 python 读 `素材库/materials_library.json`，
          检查发布字段（title/summary/tags/search_keywords/publish_angle/why_publish/
-         ai_note/screenshot_suggest）是否含内部名：FS-/某零售重构项目/某零售集团/某零售平台/京东/内部协作系统/
+         ai_note/screenshot_suggest）是否含内部名（按类别判定，不在本文件列具体字样）：客户与售前项目名 / 内部系统与平台代号 / 外部厂商与云产品名 / 单号 / 内部协作系统名 /
          内部系统代号/客户项目名/真实姓名及拼音（均已按类别泛化）。
          若泄漏数 > 0，**立即报错并中止汇报**，提示需人工复查 sanitize() 规则。
       3) **规模告警（必须先于汇报执行）**：读 `素材库/materials_library.json` 的 cards 长度。
