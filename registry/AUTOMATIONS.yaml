@@ -31,7 +31,7 @@
 # ============================================================
 
 schema_version: 1
-updated: "2026-09-30"
+updated: "2026-10-14"
 workspace_root: <WORKSPACE_ROOT>
 timezone: Asia/Shanghai
 platform_of_record: WorkBuddy (automation_update)
@@ -110,7 +110,7 @@ automations:
 
   # ------------------------------------------------ T-WB-02
   - slug: daily-trend-scan
-    id: 9993e140-d717-49b8-b034-fc3680befc0a
+    id: e3880a98-15b1-4c1c-9077-d92b4875c040
     name: 每日舆情扫描与爆款选题推荐
     status: ACTIVE
     ring: L4
@@ -122,7 +122,7 @@ automations:
       - <WORKSPACE_ROOT>
     purpose: 并行 WebSearch 抓 24-48h AI 热点 → 与选题池/素材交叉匹配 → 5 维爆款打分出 Top3 → 产 HTML 舆情日报。
     artifacts:
-      - <WORKSPACE_ROOT>/outputs/舆情日报_YYYY-MM-DD.html
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/舆情日报/舆情日报_YYYY-MM-DD.html
       - （跑完立即入库）<WORKSPACE_ROOT>/github/xingtu-desk/data/xingtu.db
     prompt: |
       这是行途自媒体工作区（根目录 <WORKSPACE_ROOT>）的每日舆情作战任务，产出今日舆情日报。
@@ -132,12 +132,12 @@ automations:
       2. 素材匹配：读取选题池 SSoT「xingtu-vault/02_内容仓库 (Content Hub)/01_灵感与选题池/2026-选题池.md」，以及 outputs/ 下最新的「素材库时令性分析_*.json」（若存在）；把今日热点与既有选题/素材交叉匹配，热点必须能挂上已有素材或选题池编号（T-xxx），挂不上的标注「新热点·无素材储备」。
       3. 爆款评分：对候选选题按 5 维打分并加权：时效性30%（<24h=5分/72h内=3/常青=1）、话题热度25%（搜索结果量级与头部覆盖）、素材匹配度20%、受众契合度15%（技术经理/Vibe Coder 关注工具链>模型新闻>资本新闻）、独家性10%（能否挂一手实测/账单/流水线）。输出 Top3。
       4. 日历建议：读取发布日历 SSoT「xingtu-vault/03_运营工具箱 (Operations Toolkit)/」下的 00_全局发布日历_2026-09.md，对照 Top3 给出替换/补充/顺延建议，只建议不修改日历。若发现日历与发布日志排期矛盾，在日报中标注「待统一」。
-      5. 产出：单文件零依赖 HTML 日报（离线可开，行途蓝 #056DE8 主色），写入 <WORKSPACE_ROOT>/outputs/舆情日报_YYYY-MM-DD.html（用当天日期）。结构：今日热点（带来源链接）/ Top3 爆款选题（含 5 维分数与推荐理由）/ 日历调整建议 / 风险提示（素材缺口、待统一矛盾项）。所有数字标注来源。
+      5. 产出：单文件零依赖 HTML 日报（离线可开，行途蓝 #056DE8 主色），写入 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/舆情日报/舆情日报_YYYY-MM-DD.html（用当天日期）。结构：今日热点（带来源链接）/ Top3 爆款选题（含 5 维分数与推荐理由）/ 日历调整建议 / 风险提示（素材缺口、待统一矛盾项）。所有数字标注来源。
       6. 红线：不修改选题池（入库只能走 tools/topic_pool_pipeline.py）；不修改发布日历；不产出任何待发布稿件全文；不生成对外发布内容；最终发布决策留给 boss。
 
   # ------------------------------------------------ T-WB-11（按时刻插入，编号=创建序号非排序号）
   - slug: mp-data-review-daily
-    id: 9e14df60-0715-4796-bdfb-61d04b76db94
+    id: 26ff39b1-6458-40a0-9d80-44537d11c923
     name: 行途公众号数据复盘·操盘手判断（每日 09:40）
     status: ACTIVE
     ring: L4
@@ -152,7 +152,7 @@ automations:
       区别于 mp-daily-ops-report（前瞻式「发什么/怎么发」决策指令）：本任务不产出排期决策，
       只回答「数据讲了什么、假设成立还是被推翻、策略要不要调」。
     artifacts:
-      - <WORKSPACE_ROOT>/outputs/数据复盘_YYYY-MM-DD.md
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/数据复盘/数据复盘_YYYY-MM-DD.md
     notes: >-
       2026-09-18 新建。动因：boss 要求「每天公众号数据复盘，作为资深操盘手结合数据有个自己的判断」。
       背景：原 09:30 晨间决策日报自动化已在平台丢失且未登记入本档案，故「看数据→给判断」一度真空；
@@ -172,12 +172,12 @@ automations:
       1) 拉快照：cd <WORKSPACE_ROOT> && python3 tools/mp_stats_puller.py --pull
          - 成功 → data/stats_YYYY-MM-DD.json（同日重跑覆盖）
          - 两类典型失败：40164（IP 白名单，无自救）/ bsk 未登录（需 boss 打开 Chrome 登录 mp.weixin.qq.com）。失败则记录原因、跳过拉取、用现有最新快照继续，并在复盘顶部注明"数据截止 <日期>"。禁止循环重试轰炸。
-      2) 跑数据底座：python3 tools/mp_daily_report.py --days 7（产出 outputs/运营日报_YYYY-MM-DD.md）。本任务对它只读取消费、绝不改写覆盖；即使当日该文件已被别的管线占用也不重写。
+      2) 跑数据底座：python3 tools/mp_daily_report.py --days 7（产出 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/运营日报/运营日报_YYYY-MM-DD.md）。本任务对它只读取消费、绝不改写覆盖；即使当日该文件已被别的管线占用也不重写。
       3) 口径校准（关键，🔴 2026-09-18 实锤教训）：
          - 证据等级排序：data/stats_*.json（bsk 只读后台发表记录）= 一级事实源 ＞ 发布日志/台账 ＞ 排期表。禁止把发布台账当凭证层用。
          - 已实证事故：发布日志_2026-09.md 的 09-16/09-17/09-18 三行把「计划行」当「实际行」登记（真实应为 9/16 AGENT-03 阅读 133、9/17 FDE-07 阅读 78）。凡引用阅读/分享数字，必须从 stats 快照取；引用台账数字时须标注「台账口径·待后台校准」。
          - 引用任何数字必须标注来源与口径，禁止把"平台记账/发布日志预估/排期推断"与后台真值混用而不加注。
-      4) 写 outputs/数据复盘_YYYY-MM-DD.md，四段结构（这是本任务的核心交付，自建独立文件，不写入上述运营日报）：
+      4) 写 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/数据复盘/数据复盘_YYYY-MM-DD.md，四段结构（这是本任务的核心交付，自建独立文件，不写入上述运营日报）：
          ① 事实层：昨日 + 近 7 天关键指标（阅读/分享/分享率/新增关注/总粉），只列对本复盘有解释力的数字，不铺全量表。必须标注数据截止日与取数来源。
          ② 判断层（操盘手立言，本节不许空）：基于数据给出 2-3 条「我的判断」，每条格式 = 结论 → 数据依据 → 对下一步动作的含义。要求敢说别人看不出的东西（例：某篇分享率高但阅读低 = 内容被认可而分发未打开，是"渠道问题"不是"选题问题"）。禁止骑墙，禁止"需要进一步观察"式免责废话。
          ③ 假设验证：把此前复盘或策略里明确提出过的假设逐条对账（成立 / 推翻 / 证据不足）并更新。若历史上没有成文假设，则本轮从②的判断里提炼 1-2 条可证伪假设写入，供次日对账。这是让复盘产生复利的关键，不许跳过。
@@ -194,11 +194,11 @@ automations:
       - 推送：产出后把②判断层 + ④策略建议的压缩版发到「我的微信」（首行写明数据截止日），让人在 30 秒内拿到判断，而不是拿到表格。
 
       【完成判定·查凭证不问自述】
-      必须同时满足才算完成：1) stat -f '%Sm' <WORKSPACE_ROOT>/outputs/数据复盘_$(date +%F).md 的 mtime 是今天；2) 该文件含②判断层且每条有 [信号强度] 标注；3) 顶部写明数据截止日。脚本可能静默失败留下旧文件，务必核对 mtime，不冒充已生成。
+      必须同时满足才算完成：1) stat -f '%Sm' <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/数据复盘/数据复盘_$(date +%F).md 的 mtime 是今天；2) 该文件含②判断层且每条有 [信号强度] 标注；3) 顶部写明数据截止日。脚本可能静默失败留下旧文件，务必核对 mtime，不冒充已生成。
 
   # ------------------------------------------------ T-WB-03
   - slug: wechat-tuitu-daily
-    id: a6d6442d-dca5-468e-89f5-bfe05fcdfe1c
+    id: ac231f80-bb4f-4925-aeb3-0a78045336da
     name: 公众号贴图日更流水线
     status: ACTIVE
     ring: L3
@@ -210,15 +210,15 @@ automations:
       - <WORKSPACE_ROOT>
     purpose: 从已发长文提炼反直觉观点 → 生成「一图一观点」卡 → bsk 接管浏览器挂原文链接存草稿（**绝不发表**）。
     artifacts:
-      - <WORKSPACE_ROOT>/outputs/贴图卡片_一图一观点/
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/贴图卡片/
     external_side_effect: 写公众号草稿箱（需已登录浏览器态）
     prompt: |
       执行行途公众号「一图一观点」贴图日更（每天 1 条，存草稿不发表）。步骤：
       1. 在 <WORKSPACE_ROOT> 工作空间，从未被做过的已发长文（源目录 xingtu-articles/articles/ 与 xingtu-articles/toolchain-practice/token-saving/，已做过的编号记录在 github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-公众号贴图流量与封面优化发布规划.md §7 决策记录里，接着往后编 #编号）提炼 1 个最反直觉/最有数据锚点的核心观点。
-      2. 用生成器出卡：python3 tools/tuitu_card_gen.py --num <编号> --big "<大字钩子，可含 <span class='accent'>>" --big-sub "<一句副标>" --title "<观点标题，可含 <br>>" --sub "<支撑句>" --quote "<金句>"（输出在 outputs/贴图卡片_一图一观点/）。风格铁律 P028：黑白极简、行途蓝 #056DE8、无 emoji、无 AI 腔。
+      2. 用生成器出卡：python3 tools/tuitu_card_gen.py --num <编号> --big "<大字钩子，可含 <span class='accent'>>" --big-sub "<一句副标>" --title "<观点标题，可含 <br>>" --sub "<支撑句>" --quote "<金句>"（输出在 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/贴图卡片/）。风格铁律 P028：黑白极简、行途蓝 #056DE8、无 emoji、无 AI 腔。
       3. 用 browser-skill 的 bsk（可执行文件在 ~/.local/bin/bsk，不在 PATH）接管已登录浏览器代填草稿，完整操作 SOP 见 skill「wechat-tuitu-publish」：navigate https://mp.weixin.qq.com/ → 首页「新的创作」→贴图 → drop 模式上传 PNG → 填标题（≤20字）与描述（≤300字+2-4个#标签）→ 链接挂对应原文文章 → 确认「平台推荐已开启」→ 点「保存为草稿」，【绝对禁止点发表】，发表永远由 boss 人工决定。
       4. 若浏览器未登录/掉登录态，用 bsk request-help 提示 boss 扫码，不要自己想办法绕。
-      5. 收尾：用 bsk session stop 关会话；回写 CHANGELOG（python3 tools/changelog_append.py --type "🆕" --path "outputs/贴图卡片_一图一观点/" --desc "..." --tool workbuddy）；在 spec github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-公众号贴图流量与封面优化发布规划.md §7 追加一行决策记录（编号、源文章、卡文件名）；最后回复 boss 一句话：今日卡预览路径 + 草稿已就位待发表。
+      5. 收尾：用 bsk session stop 关会话；回写 CHANGELOG（python3 tools/changelog_append.py --type "🆕" --path "github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/贴图卡片/" --desc "..." --tool workbuddy）；在 spec github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-公众号贴图流量与封面优化发布规划.md §7 追加一行决策记录（编号、源文章、卡文件名）；最后回复 boss 一句话：今日卡预览路径 + 草稿已就位待发表。
 
   # ------------------------------------------------ T-WB-04
   - slug: ai-collab-miner-daily
@@ -316,7 +316,7 @@ automations:
 
   # ------------------------------------------------ T-WB-06
   - slug: opensource-matrix-weekly
-    id: 8dc7cc66-f7e2-4fa6-96f0-40d99957cfc1
+    id: de3c9340-bfb7-4eb7-a05f-c9b3ddf6d5d7
     name: 开源矩阵日巡检（全仓健康度+隐私复扫+已发布文章+Skills+Harness跟进）
     status: ACTIVE
     ring: L3
@@ -328,7 +328,7 @@ automations:
       - <WORKSPACE_ROOT>
     purpose: 24 个开源仓的唯一自动化防线——隐私复扫（SAF-010）+ 未提交未推送 + 门面一致性 + 子模块指针 + 内容缺口，产 HTML 报告。
     artifacts:
-      - <WORKSPACE_ROOT>/outputs/开源矩阵巡检_YYYY-MM-DD.html
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/开源矩阵巡检/开源矩阵巡检_YYYY-MM-DD.html
     prompt: |
       对行途 GitHub 开源矩阵（19 公开仓 + 5 私有仓）做每周健康度巡检，产出单文件 HTML 报告。这是矩阵目前唯一一道自动化防线——没有它，24 个仓全靠人工记得。
 
@@ -345,7 +345,7 @@ automations:
       6) **已发布归档**：检查 `github/xingtu-vault/09_个人台账/03_已发布文章档案/` 有无新增发布记录未同步到 articles 仓。
 
       【产出】
-      - 单文件零依赖 HTML 报告写入 `<WORKSPACE_ROOT>/outputs/开源矩阵巡检_YYYY-MM-DD.html`（行途蓝 #056DE8 主色，离线可开）
+      - 单文件零依赖 HTML 报告写入 `<WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/开源矩阵巡检/开源矩阵巡检_YYYY-MM-DD.html`（行途蓝 #056DE8 主色，离线可开）
       - 结构：总览健康度评分 / 🔴 必修项（含具体文件与行）/ 各仓状态表 / 内容缺口 / 待 boss 拍板项
       - 回写 CHANGELOG：`python3 tools/changelog_append.py --type "🔧" --path "github/*" --desc "..." --tool workbuddy`
 
@@ -407,7 +407,7 @@ automations:
 
   # ------------------------------------------------ T-WB-08
   - slug: monetization-flywheel-weekly
-    id: automation-1787753469338
+    id: 5eda654a-7f47-4d11-b55a-d90331c1208c
     name: 行途·变现驱动内容飞轮
     status: ACTIVE
     ring: L4
@@ -419,8 +419,8 @@ automations:
       - <WORKSPACE_ROOT>          # ← 2026-09-14 修正（原误指残留目录）
     purpose: 技能匹配 → 跑 L1/L2/L3 脚本取数 →「变现驱动」反推本周 TOP5 发布序列 → 周报 + 效率埋点。
     artifacts:
-      - <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮周报_<日期>.md
-      - <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮运行日志.jsonl
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/飞轮周报/飞轮周报_<日期>.md
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/飞轮周报/飞轮运行日志.jsonl
     history:
       - "2026-09-14: cwd 与 prompt 内全部路径由 <HOME>/工作室/xingtu 修正为 <WORKSPACE_ROOT>。
          实害已发生：2026-09-13 的周报落在残留目录 outputs/内容战略分析/ 下（主区看不到）。"
@@ -448,11 +448,11 @@ automations:
 
       4. 【反哺校验】若公众号 AppID/Secret 已配置（tools/wechat_audience_config.json 存在），运行 wechat_audience_puller.py 拉实测粉丝画像，对照推断画像修正选题假设；否则跳过并记录"待 Boss 配密钥"。
 
-      5. 【产出】把本轮结果写入 <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮周报_<今天日期>.md（含：新萃素材数、本周TOP5排期、待补内容缺口、广告植入是否超每周≤1次红线、SAF-003下班后发布提醒）。同时在对话框给 Boss 一句话结论 + TOP3 选题。
+      5. 【产出】把本轮结果写入 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/飞轮周报/飞轮周报_<今天日期>.md（含：新萃素材数、本周TOP5排期、待补内容缺口、广告植入是否超每周≤1次红线、SAF-003下班后发布提醒）。同时在对话框给 Boss 一句话结论 + TOP3 选题。
 
       6. 【红线】绝不在产出中编造平台门槛/费率（标"需复核"）；发布动作不自动执行（仅排期）；所有对外内容须走 desensitize 合规闸门后才可发。
 
-      7. 【效率埋点（观测契约）】本轮执行的每个环节（含每个子 agent / 每次脚本调用），完成后立即向 <WORKSPACE_ROOT>/outputs/内容战略分析/飞轮运行日志.jsonl 追加一行 JSON（用 Bash 追加，UTF-8，字段：ts、phase、agent、startedAt、finishedAt、outputChars、success，时间戳用 date +%s000 取毫秒值）。全部环节结束后，运行 <PYTHON> <WORKSPACE_ROOT>/tools/flywheel_monitor.py 刷新效率看板，并在周报末尾引用本期「并行加速比、成功率、总产出字数」三个数。
+      7. 【效率埋点（观测契约）】本轮执行的每个环节（含每个子 agent / 每次脚本调用），完成后立即向 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/飞轮周报/飞轮运行日志.jsonl 追加一行 JSON（用 Bash 追加，UTF-8，字段：ts、phase、agent、startedAt、finishedAt、outputChars、success，时间戳用 date +%s000 取毫秒值）。全部环节结束后，运行 <PYTHON> <WORKSPACE_ROOT>/tools/flywheel_monitor.py 刷新效率看板，并在周报末尾引用本期「并行加速比、成功率、总产出字数」三个数。
 
   # ------------------------------------------------ T-WB-09
   - slug: workspace-batch1-housekeeping
@@ -555,14 +555,13 @@ automations:
       - "2026-09-30: 新建。动因：doubao 09-30 凌晨入库是一次性快照，滚动产出断流；boss 拍板「vault 子目录 + 全量推 private」。"
       - "⚠️ 2026-09-30 实测：本会话 launchctl bootstrap 整体不可用（I/O error 5，连已知任务重装也失败），LaunchAgent 已落盘但需下次登录才加载；在此之前由 WorkBuddy automation 单跑。com.xingtu.desk.daily 对照实验中被卸载，同样待登录恢复。"
 
-  # ------------------------------------------------ 盘点备注（2026-09-30 WorkBuddy 日志实测，档案待补条目）
-  # 平台实际在跑但本档案未登记的 5 个：
-  #   · 行途工作台·每日数据同步（7ec3cffb）→ 产物 github/xingtu-desk（仓内）
-  #   · 免费算力实践日刊（584e5ed0，每日09:00）→ outputs/免费算力日刊/；⚠️ 连续 429 quota 失败
-  #   · 技能库每周体检 checkup（580a2822）→ outputs/技能库体检报告_*.html
-  #   · GitHub文章回流公众号·每周1篇（4db37608）→ 产出路径待补录
-  #   · MEM考研·每日学习打卡（3a5cc2f3）→ 提醒类无落盘
-  # 另：每日舆情扫描与贴图流水线存在双 id 漂移（9993e140/e3880a98、a6d6442d/ac231f80），疑似平台侧重复登记。
+  # ------------------------------------------------ 盘点备注（2026-10-14 已闭环）
+  # 上述「平台在跑但 registry 漏登」的 4 条（工作台同步/免费算力日刊/技能库体检/GitHub文章回流）
+  # 已于 2026-10-14 补登为 T-WB-21~T-WB-24；MEM考研（3a5cc2f3）早已是 T-WB-20。
+  # ID 漂移已裁决：舆情日报=e3880a98、贴图日更=ac231f80（旧 9993e140/a6d6442d 作废）。
+  # 2026-10-14 路径大统一：原 outputs/ 落盘的 6 类产物（舆情日报/数据复盘/开源矩阵巡检/
+  # 贴图卡片/飞轮周报/工具带盘点）全部改落 vault「03_运营工具箱 (Operations Toolkit)/定时任务产出/」，
+  # 与私有 registry .harness/scheduled/AUTOMATIONS.yaml 对齐，统一 SSoT、供云端 Agent 接力。
 
   # ------------------------------------------------ T-WB-19（2026-10-12 新增）
   - slug: toolbelt-weekly-scan
@@ -584,12 +583,12 @@ automations:
       （结构模式 + 外挂红线词表双门禁，0 命中才落盘）。
     artifacts:
       - <WORKSPACE_ROOT>/data/toolbelt_inventory.json
-      - <WORKSPACE_ROOT>/outputs/云中立工具带盘点_<日期>.html
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/工具带盘点_<日期>/
       - <WORKSPACE_ROOT>/github/xingtu-cloud-neutral/inventory/toolbelt_inventory.json
       - <WORKSPACE_ROOT>/github/xingtu-cloud-neutral/inventory/<日期>.html
     public_mirror: github/xingtu-cloud-neutral/automations/toolbelt-weekly-scan.yaml（占位符路径版）
     prompt: |
-      （全文见公开仓 mirror + 平台侧；执行要点：cwd=工作区根 → 跑 toolbelt_scan.py --redline-file <WORKSPACE_ROOT>/.redline_words.txt → 复制产出进 inventory/ → 增量对比六指标 → 本地 commit → 有变动走 tools/github_data_push.py 推送 → 汇报六指标+环比+漂移Top3，有实质变动另出微信推送卡草稿落 outputs/ 不发送。）
+      （全文见公开仓 mirror + 平台侧；执行要点：cwd=工作区根 → 跑 toolbelt_scan.py --redline-file <WORKSPACE_ROOT>/.redline_words.txt → 复制产出进 inventory/ → 增量对比六指标 → 本地 commit → 有变动走 tools/github_data_push.py 推送 → 汇报六指标+环比+漂移Top3，有实质变动另出微信推送卡草稿落 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/工具带盘点_<日期>/ 不发送。）
       【红线】只读；禁读会话正文；禁出现真名/雇主代号/绝对个人路径/词表内容本身。门禁拒写（exit 2）立即停，不绕过。
 
   # ------------------------------------------------ T-CC-01~03（Claude Code 侧 scheduled_tasks）
@@ -635,7 +634,7 @@ automations:
       - <WORKSPACE_ROOT>
     purpose: 每周提醒推进知识付费冷启动计划（验证 + 建信任），防止长期项目被日常发布节奏淹没。
     artifacts:
-      - <WORKSPACE_ROOT>/outputs/（提醒卡）
+      - （提醒类·无文件落盘）
     note: 完整 spec 在私有 registry .harness/scheduled/knowledge-payment-reminder/spec.md
 
   # ------------------------------------------------ T-WB-20（2026-10-12 补登：平台有而 registry 漏）
@@ -652,5 +651,75 @@ automations:
       - <WORKSPACE_ROOT>
     purpose: 每日学习打卡提醒与进度记录（学历提升线，与内容飞轮并行的长期项目）。
     artifacts:
-      - <WORKSPACE_ROOT>/outputs/（打卡记录）
+      - <WORKSPACE_ROOT>/github/xingtu-learn/（打卡记录）
     note: prompt 全文待从平台导出回填私有 registry
+
+  # ------------------------------------------------ T-WB-21（2026-10-14 补登：平台有而 registry 漏）
+  - slug: desk-data-daily-sync
+    id: 7ec3cffb-225a-43b5-89c5-392e62394cf8
+    name: 行途工作台·每日数据同步
+    status: ACTIVE
+    ring: L1
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=0;BYMINUTE=0
+      cron: "0 0 * * *"
+      human: 每天 08:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 同步工作台（xingtu-desk）的运营数据/看板至本地 git 仓，供主页与监测消费。
+    artifacts:
+      - <WORKSPACE_ROOT>/github/xingtu-desk/data/
+    note: 产物落 xingtu-desk 仓内（已是 git/云端可见），不经 outputs/。完整 prompt 见平台侧。
+
+  # ------------------------------------------------ T-WB-22（2026-10-14 补登）
+  - slug: free-compute-daily
+    id: 584e5ed0-f25d-4a4c-b68a-31c2ad74b828
+    name: 免费算力实践日刊（每日 09:00）
+    status: ACTIVE
+    ring: L3
+    schedule:
+      rrule: FREQ=DAILY;BYHOUR=1;BYMINUTE=0
+      cron: "0 1 * * *"
+      human: 每天 09:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 汇总当日免费/低价算力渠道与用法实践，产 markdown 日刊，供「省 token」选题反哺。
+    artifacts:
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/免费算力日刊/<日期>.md
+    note: >-
+      2026-10-14 路径由 outputs/ 迁至 vault 定时任务产出/（统一 SSoT）。⚠️ 历史连续 429 quota
+      失败（设备离线/配额），非路径问题；恢复后落盘位置已正确。完整 prompt 见平台侧。
+
+  # ------------------------------------------------ T-WB-23（2026-10-14 补登）
+  - slug: skill-library-weekly-checkup
+    id: 580a2822-a08e-4c7b-96c7-a06f09b5c18f
+    name: 技能库每周体检（checkup）
+    status: ACTIVE
+    ring: L3
+    schedule:
+      rrule: FREQ=WEEKLY;BYDAY=MO;BYHOUR=1;BYMINUTE=40
+      cron: "40 1 * * 1"
+      human: 每周一 09:40
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 扫描已装 skills 健康度（缺失/版本漂移/僵尸/红线命中），产 HTML 体检报告。
+    artifacts:
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/技能库体检/技能库体检报告_<日期>.html
+    note: 2026-10-14 路径由 outputs/ 迁至 vault 定时任务产出/（统一 SSoT）。完整 prompt 见平台侧。
+
+  # ------------------------------------------------ T-WB-24（2026-10-14 补登）
+  - slug: github-article-reflux
+    id: 4db37608-f36a-4425-85e0-6342b2854c5c
+    name: GitHub文章回流公众号·每周1篇（差异化改写+脱敏）
+    status: ACTIVE
+    ring: L2
+    schedule:
+      rrule: FREQ=WEEKLY;BYDAY=WE;BYHOUR=12;BYMINUTE=0
+      cron: "0 12 * * 3"
+      human: 每周三 20:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 从 GitHub 开源仓已发布技术文差异化改写+脱敏，回流为公众号草稿素材，入 vault 回流草稿。
+    artifacts:
+      - <WORKSPACE_ROOT>/github/xingtu-vault/02_草稿/回流草稿/
+    note: 2026-10-14 补登。产出落 vault 02_草稿/回流草稿/（已是 SSoT，不经 outputs/）。完整 prompt 见平台侧。
