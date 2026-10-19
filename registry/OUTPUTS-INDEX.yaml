@@ -1,0 +1,23 @@
+# 行途 · 定时任务产出索引（OUTPUTS-INDEX）
+# ============================================================
+# 用途：agent 一眼看全「今天所有定时任务产出了什么」，无需逐个仓库翻。
+# 刷新：由 `ops-feed-daily-push`（ops_feed_sync）每日增量写入，每条记录
+#       任务 -> 当日产出文件 -> mtime -> 一句话结论（verdict）。
+# 路径：脱敏占位符 <WORKSPACE_ROOT>/<HOME>/<PYTHON>（公开镜像纪律，SAF-010）。
+# 真实全量索引在 vault `03_运营工具箱 (Operations Toolkit)/定时任务产出/_索引.md`（私有 SSoT）。
+# ============================================================
+
+schema_version: 1
+updated: "<由 ops-feed 滚动推送填充 YYYY-MM-DD>"
+index:
+  # —— 示例（真实由滚动推送写入）——
+  # - date: 2026-10-19
+  #   slug: mp-data-review-daily
+  #   artifact: <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/数据复盘/2026-10-19.html
+  #   mtime: "2026-10-19T09:42"
+  #   verdict: "分享率 13.0% 回暖但 Δ粉/篇 降，瓶颈换位'转了不涨'，冲 24h 享≥6"
+  # - date: 2026-10-19
+  #   slug: skill-evolution-miner
+  #   artifact: <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/技能进化分析/技能进化分析_2026-10-19.html
+  #   mtime: "2026-10-19T11:05"
+  #   verdict: "任务域热度 Top5：…；下线候选 3 个收敛 OK"

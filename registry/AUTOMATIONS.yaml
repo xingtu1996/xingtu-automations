@@ -1,5 +1,5 @@
 # ============================================================
-# 行途 · 多 Agent 定时任务 Registry（Tool-Neutral · 公开镜像）
+# 行途技术 · 多 Agent 定时任务 Registry（Tool-Neutral · 公开镜像）
 # ============================================================
 # 本文件是公开镜像：路径用占位符（<WORKSPACE_ROOT>/<HOME>/<PYTHON>），
 # 平台侧重建时替换为实际值。私有全量真源在工作区 .harness/scheduled/
@@ -67,7 +67,8 @@ automations:
 
   # ------------------------------------------------ T-WB-01
   - slug: session-broadcast-collect
-    id: automation-1786033319546
+    category: 创作
+    id: b27584d3-843b-45f9-a552-4525f21fd1d6
     name: AI会话广撒网采集·主题与自媒体潜力分析（每日累积沉淀）
     status: ACTIVE
     ring: L1
@@ -82,7 +83,7 @@ automations:
       - <WORKSPACE_ROOT>/tools/sessions_analysis.json
       - <WORKSPACE_ROOT>/tools/sessions_dashboard.html
     prompt: |
-      你是行途的「AI 协作会话大数据」采集分析助手。每日对 boss 与 AI（Claude Code 等）的【全部】历史会话做增量采集与主题/自媒体潜力分析，把结果累积进本地 DB 并刷新可浏览看板，为个人 IP 反哺提供数据底座。
+      你是行途技术的「AI 协作会话大数据」采集分析助手。每日对 boss 与 AI（Claude Code 等）的【全部】历史会话做增量采集与主题/自媒体潜力分析，把结果累积进本地 DB 并刷新可浏览看板，为个人 IP 反哺提供数据底座。
 
       【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用其他历史路径）。所有脚本、DB、看板一律读写该目录下的 `tools/`。
 
@@ -106,10 +107,11 @@ automations:
          - 主题赛道分布；近 2 天新增会话数（按 `updated_at` 或文件 mtime 判断）。
       4) 用中文向用户简短汇报：今日新增分析会话数、累积规模、高潜力未选题缺口数、主题分布概况、dashboard 路径。约束：仅本地汇总汇报，绝不对外发布或推送；不修改 ~/.claude/projects 与素材库任何文件（只读）。
 
-      【这是「广撒网→分析→沉淀」数据底座，与另一个任务（每日从 DB 挑高潜力未选题生成 1 篇素材）配合，共同反哺行途个人 IP。】
+      【这是「广撒网→分析→沉淀」数据底座，与另一个任务（每日从 DB 挑高潜力未选题生成 1 篇素材）配合，共同反哺行途技术个人 IP。】
 
   # ------------------------------------------------ T-WB-02
   - slug: daily-trend-scan
+    category: 信源
     id: e3880a98-15b1-4c1c-9077-d92b4875c040
     name: 每日舆情扫描与爆款选题推荐
     status: ACTIVE
@@ -125,20 +127,21 @@ automations:
       - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/舆情日报/舆情日报_YYYY-MM-DD.html
       - （跑完立即入库）<WORKSPACE_ROOT>/github/xingtu-desk/data/xingtu.db
     prompt: |
-      这是行途自媒体工作区（根目录 <WORKSPACE_ROOT>）的每日舆情作战任务，产出今日舆情日报。
+      这是行途技术自媒体工作区（根目录 <WORKSPACE_ROOT>）的每日舆情作战任务，产出今日舆情日报。
 
       执行步骤：
       1. 舆情采集：用 WebSearch 并行搜索（3-5 组查询）过去 24-48h AI 行业热点，覆盖：大模型新发布/降价/缓存价格、Agent 与 AI 编程工具链（Claude Code/OpenCode/Codex/WorkBuddy 等）、值得关注的 GitHub 开源项目、行业大事件。每组结果必须记录来源链接。
       2. 素材匹配：读取选题池 SSoT「xingtu-vault/02_内容仓库 (Content Hub)/01_灵感与选题池/2026-选题池.md」，以及 outputs/ 下最新的「素材库时令性分析_*.json」（若存在）；把今日热点与既有选题/素材交叉匹配，热点必须能挂上已有素材或选题池编号（T-xxx），挂不上的标注「新热点·无素材储备」。
       3. 爆款评分：对候选选题按 5 维打分并加权：时效性30%（<24h=5分/72h内=3/常青=1）、话题热度25%（搜索结果量级与头部覆盖）、素材匹配度20%、受众契合度15%（技术经理/Vibe Coder 关注工具链>模型新闻>资本新闻）、独家性10%（能否挂一手实测/账单/流水线）。输出 Top3。
       4. 日历建议：读取发布日历 SSoT「xingtu-vault/03_运营工具箱 (Operations Toolkit)/」下的 00_全局发布日历_2026-09.md，对照 Top3 给出替换/补充/顺延建议，只建议不修改日历。若发现日历与发布日志排期矛盾，在日报中标注「待统一」。
-      5. 产出：单文件零依赖 HTML 日报（离线可开，行途蓝 #056DE8 主色），写入 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/舆情日报/舆情日报_YYYY-MM-DD.html（用当天日期）。结构：今日热点（带来源链接）/ Top3 爆款选题（含 5 维分数与推荐理由）/ 日历调整建议 / 风险提示（素材缺口、待统一矛盾项）。所有数字标注来源。
+      5. 产出：单文件零依赖 HTML 日报（离线可开，行途技术蓝 #056DE8 主色），写入 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/舆情日报/舆情日报_YYYY-MM-DD.html（用当天日期）。结构：今日热点（带来源链接）/ Top3 爆款选题（含 5 维分数与推荐理由）/ 日历调整建议 / 风险提示（素材缺口、待统一矛盾项）。所有数字标注来源。
       6. 红线：不修改选题池（入库只能走 tools/topic_pool_pipeline.py）；不修改发布日历；不产出任何待发布稿件全文；不生成对外发布内容；最终发布决策留给 boss。
 
   # ------------------------------------------------ T-WB-11（按时刻插入，编号=创建序号非排序号）
   - slug: mp-data-review-daily
+    category: 创作
     id: 26ff39b1-6458-40a0-9d80-44537d11c923
-    name: 行途公众号数据复盘·操盘手判断（每日 09:40）
+    name: 行途技术公众号数据复盘·操盘手判断（每日 09:40）
     status: ACTIVE
     ring: L4
     schedule:
@@ -159,7 +162,7 @@ automations:
       本任务与决策日报职责划清，不双份维护。核心增量＝冷启动样本量护栏（每条结论强制标 [信号强度]，
       连续 3 天同向或数量级差异才可标强），防止 50 粉规模下把噪声当信号做策略转向。
     prompt: |
-      在 <WORKSPACE_ROOT> 工作区执行「公众号每日数据复盘」，角色 = 资深全平台 IP 操盘手（先读根 AGENTS.md 确认含「行途」，再读 RULER.md 建立角色预设）。
+      在 <WORKSPACE_ROOT> 工作区执行「公众号每日数据复盘」，角色 = 资深全平台 IP 操盘手（先读根 AGENTS.md 确认含「行途技术」，再读 RULER.md 建立角色预设）。
 
       【定位·务必厘清】本任务 = 后顾式「数据复盘」，不是前瞻式「发什么/怎么发」决策指令（后者归 .agents/skills/mp-daily-ops-report/SKILL.md，职责不重叠、不互相替代）。本任务只审视已有的真实数据：昨天和过去一个窗口到底发生了什么、验证了还是推翻了哪个假设、下一步策略要不要调。严禁写成"昨日新增 X / 阅读 Y"的流水账搬运，也严禁写成进度汇报。
 
@@ -198,6 +201,7 @@ automations:
 
   # ------------------------------------------------ T-WB-03
   - slug: wechat-tuitu-daily
+    category: 创作
     id: ac231f80-bb4f-4925-aeb3-0a78045336da
     name: 公众号贴图日更流水线
     status: ACTIVE
@@ -213,16 +217,17 @@ automations:
       - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/贴图卡片/
     external_side_effect: 写公众号草稿箱（需已登录浏览器态）
     prompt: |
-      执行行途公众号「一图一观点」贴图日更（每天 1 条，存草稿不发表）。步骤：
+      执行行途技术公众号「一图一观点」贴图日更（每天 1 条，存草稿不发表）。步骤：
       1. 在 <WORKSPACE_ROOT> 工作空间，从未被做过的已发长文（源目录 xingtu-articles/articles/ 与 xingtu-articles/toolchain-practice/token-saving/，已做过的编号记录在 github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-公众号贴图流量与封面优化发布规划.md §7 决策记录里，接着往后编 #编号）提炼 1 个最反直觉/最有数据锚点的核心观点。
-      2. 用生成器出卡：python3 tools/tuitu_card_gen.py --num <编号> --big "<大字钩子，可含 <span class='accent'>>" --big-sub "<一句副标>" --title "<观点标题，可含 <br>>" --sub "<支撑句>" --quote "<金句>"（输出在 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/贴图卡片/）。风格铁律 P028：黑白极简、行途蓝 #056DE8、无 emoji、无 AI 腔。
+      2. 用生成器出卡：python3 tools/tuitu_card_gen.py --num <编号> --big "<大字钩子，可含 <span class='accent'>>" --big-sub "<一句副标>" --title "<观点标题，可含 <br>>" --sub "<支撑句>" --quote "<金句>"（输出在 <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/贴图卡片/）。风格铁律 P028：黑白极简、行途技术蓝 #056DE8、无 emoji、无 AI 腔。
       3. 用 browser-skill 的 bsk（可执行文件在 ~/.local/bin/bsk，不在 PATH）接管已登录浏览器代填草稿，完整操作 SOP 见 skill「wechat-tuitu-publish」：navigate https://mp.weixin.qq.com/ → 首页「新的创作」→贴图 → drop 模式上传 PNG → 填标题（≤20字）与描述（≤300字+2-4个#标签）→ 链接挂对应原文文章 → 确认「平台推荐已开启」→ 点「保存为草稿」，【绝对禁止点发表】，发表永远由 boss 人工决定。
       4. 若浏览器未登录/掉登录态，用 bsk request-help 提示 boss 扫码，不要自己想办法绕。
       5. 收尾：用 bsk session stop 关会话；回写 CHANGELOG（python3 tools/changelog_append.py --type "🆕" --path "github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/贴图卡片/" --desc "..." --tool workbuddy）；在 spec github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260906-公众号贴图流量与封面优化发布规划.md §7 追加一行决策记录（编号、源文章、卡文件名）；最后回复 boss 一句话：今日卡预览路径 + 草稿已就位待发表。
 
   # ------------------------------------------------ T-WB-04
   - slug: ai-collab-miner-daily
-    id: automation-1786945815343
+    category: 创作
+    id: 6be19b7e-6bfa-45f9-a552-4525f21fd1d6
     name: AI协作对话挖掘·每日1素材
     status: ACTIVE
     ring: L2
@@ -238,7 +243,7 @@ automations:
       - <WORKSPACE_ROOT>/github/xingtu-vault/02_素材库/对话挖掘/YYYY-MM-DD_对话挖掘.md
       - （跑完立即入库）<WORKSPACE_ROOT>/github/xingtu-desk/data/xingtu.db
     prompt: |
-      你是行途的内容挖掘助手。每天从 boss 与 AI（Claude Code 等）的协作痕迹里，提炼 1 篇可用于起号/图文/视频/文章创作的"选题素材"，落进行途素材库。全流程仅本地读写，绝不对外发布或推送。
+      你是行途技术的内容挖掘助手。每天从 boss 与 AI（Claude Code 等）的协作痕迹里，提炼 1 篇可用于起号/图文/视频/文章创作的"选题素材"，落进行途技术素材库。全流程仅本地读写，绝不对外发布或推送。
 
       【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用其他历史路径）。
 
@@ -286,8 +291,9 @@ automations:
 
   # ------------------------------------------------ T-WB-05
   - slug: daily-publish-flywheel
-    id: automation-1787754681498
-    name: 行途每日发布飞轮·分层选题
+    category: 创作
+    id: 508171bd-fd83-47c6-bb1f-3d7a4620b4fa
+    name: 行途技术每日发布飞轮·分层选题
     status: ACTIVE
     ring: L2
     schedule:
@@ -300,7 +306,7 @@ automations:
     artifacts:
       - 对话内输出（不落文件）
     prompt: |
-      你是行途（XingTu）自媒体的每日发布飞轮。任务：从素材库挑今天的发布选题并给出可开工的草稿要点。
+      你是行途技术自媒体的每日发布飞轮。任务：从素材库挑今天的发布选题并给出可开工的草稿要点。
 
       【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用其他历史路径）。
 
@@ -316,6 +322,7 @@ automations:
 
   # ------------------------------------------------ T-WB-06
   - slug: opensource-matrix-weekly
+    category: 工作
     id: de3c9340-bfb7-4eb7-a05f-c9b3ddf6d5d7
     name: 开源矩阵日巡检（全仓健康度+隐私复扫+已发布文章+Skills+Harness跟进）
     status: ACTIVE
@@ -330,7 +337,7 @@ automations:
     artifacts:
       - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/开源矩阵巡检/开源矩阵巡检_YYYY-MM-DD.html
     prompt: |
-      对行途 GitHub 开源矩阵（19 公开仓 + 5 私有仓）做每周健康度巡检，产出单文件 HTML 报告。这是矩阵目前唯一一道自动化防线——没有它，24 个仓全靠人工记得。
+      对行途技术 GitHub 开源矩阵（19 公开仓 + 5 私有仓）做每周健康度巡检，产出单文件 HTML 报告。这是矩阵目前唯一一道自动化防线——没有它，24 个仓全靠人工记得。
 
       【路径纪律】工作空间唯一根目录 `<WORKSPACE_ROOT>`。仓库本地副本在 `<WORKSPACE_ROOT>/github/*` 与 `<WORKSPACE_ROOT>/md2wechat/`。
       【工具纪律】`gh` 实体在 `/opt/homebrew/bin/gh`（不在 PATH），需先 `export TOKEN=$(printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain get | awk -F= '/^password/{print $2}')` 再 `GH_HOST=github.com GH_TOKEN="$TOKEN" /opt/homebrew/bin/gh ...`。**github.com 的 SSH 不通**，push 一律走 HTTPS 或 `tools/gh_push_api.py`（走 Contents API，自动跳过相同文件，用法 `python3 tools/gh_push_api.py <目录> <owner/repo> [--dry-run]`）。
@@ -339,13 +346,13 @@ automations:
       1) **隐私复扫（最高优先级）**：`python3 tools/privacy_scan.py`（规则 15 条分级：🔴致命/🟠高危/🟡提示）。🔴 项必须当场修掉并 commit；修不了的写入报告「待 boss 拍板」。
          重点复检：中文真名与拼音、英文名 `英文名 Li` 及变体（SAF-010 已裁决全面禁用）、客户名、内部项目代号、金额/人天、在职自述、内部运营文档。
       2) **未提交/未推送**：逐个仓 `git status --porcelain` 与 `git log @{u}..HEAD`，列出有残留的仓与改动摘要。有改动的提示补 commit（不要自动 commit）。
-      3) **门面一致性**：公开仓 README 是否都有「关于作者」区块（公众号「行途」钩子）与 License 段；`github/xingtu1996/README.md` 的开源矩阵是否覆盖全部公开仓（当前 19 个）。
+      3) **门面一致性**：公开仓 README 是否都有「关于作者」区块（公众号「行途技术」钩子）与 License 段；`github/xingtu1996/README.md` 的开源矩阵是否覆盖全部公开仓（当前 19 个）。
       4) **子模块指针**：`github/xingtu-harness` 的 6 个子模块是否停在旧 gitlink（曾出现过：clone 下来拿到旧子仓）。落后则提示同步。
       5) **内容缺口**：`github/xingtu-articles` 的 README 索引是否覆盖 articles/ 下全部 md；`tuitu/` 是否有新增贴图未归档。
       6) **已发布归档**：检查 `github/xingtu-vault/09_个人台账/03_已发布文章档案/` 有无新增发布记录未同步到 articles 仓。
 
       【产出】
-      - 单文件零依赖 HTML 报告写入 `<WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/开源矩阵巡检/开源矩阵巡检_YYYY-MM-DD.html`（行途蓝 #056DE8 主色，离线可开）
+      - 单文件零依赖 HTML 报告写入 `<WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/开源矩阵巡检/开源矩阵巡检_YYYY-MM-DD.html`（行途技术蓝 #056DE8 主色，离线可开）
       - 结构：总览健康度评分 / 🔴 必修项（含具体文件与行）/ 各仓状态表 / 内容缺口 / 待 boss 拍板项
       - 回写 CHANGELOG：`python3 tools/changelog_append.py --type "🔧" --path "github/*" --desc "..." --tool workbuddy`
 
@@ -356,8 +363,9 @@ automations:
 
   # ------------------------------------------------ T-WB-07
   - slug: materials-library-weekly-refresh
-    id: automation-1787646091698
-    name: 行途素材库每周刷新（L3·遵循素材挖掘Skill）
+    category: 创作
+    id: ca780696-7aa2-4603-a6cc-020c358318d0
+    name: 行途技术素材库每周刷新（L3·遵循素材挖掘Skill）
     status: ACTIVE
     ring: L3
     schedule:
@@ -374,7 +382,7 @@ automations:
       - "2026-09-14: cwd 与 prompt 内路径由 <HOME>/工作室/xingtu 修正为 <WORKSPACE_ROOT>；
          并补入【路径纪律】段 + 卡片数规模告警（原 prompt 缺，导致在残留区跑出 12 卡而不报错）"
     prompt: |
-      你是行途素材库的 L3 维护器。遵循 **`ai-session-material-miner` Skill** 的方法论执行（核心：从 AI 会话/源目录采集 → 识别可发布颗粒 → 三级脱敏 → 入库 → 检索）。
+      你是行途技术素材库的 L3 维护器。遵循 **`ai-session-material-miner` Skill** 的方法论执行（核心：从 AI 会话/源目录采集 → 识别可发布颗粒 → 三级脱敏 → 入库 → 检索）。
 
       【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用 `<HOME>/工作室/xingtu` 等历史残留路径）。
 
@@ -407,8 +415,9 @@ automations:
 
   # ------------------------------------------------ T-WB-08
   - slug: monetization-flywheel-weekly
+    category: 创作
     id: 5eda654a-7f47-4d11-b55a-d90331c1208c
-    name: 行途·变现驱动内容飞轮
+    name: 行途技术·变现驱动内容飞轮
     status: ACTIVE
     ring: L4
     schedule:
@@ -425,7 +434,7 @@ automations:
       - "2026-09-14: cwd 与 prompt 内全部路径由 <HOME>/工作室/xingtu 修正为 <WORKSPACE_ROOT>。
          实害已发生：2026-09-13 的周报落在残留目录 outputs/内容战略分析/ 下（主区看不到）。"
     prompt: |
-      你是行途（XingTu）自媒体内容战略自动化引擎。本轮任务目标：基于既有素材库与平台变现规则，产出一份「变现驱动」的本周投稿排期，并把新素材萃取到主库。请严格按以下动态工作流执行：
+      你是行途技术自媒体内容战略自动化引擎。本轮任务目标：基于既有素材库与平台变现规则，产出一份「变现驱动」的本周投稿排期，并把新素材萃取到主库。请严格按以下动态工作流执行：
 
       【路径纪律】工作空间唯一根目录为 `<WORKSPACE_ROOT>`（绝对路径，勿使用 `<HOME>/工作室/xingtu` 等历史残留路径）。
 
@@ -456,6 +465,7 @@ automations:
 
   # ------------------------------------------------ T-WB-09
   - slug: workspace-batch1-housekeeping
+    category: 工作
     id: 88349fe3-2885-491a-b154-98b4a44d4873
     name: 工作空间收纳批次1-待会话安静后执行
     status: PAUSED
@@ -501,7 +511,7 @@ automations:
       【步骤 5 · 空目录/空文件走安全删除】bash <WORKSPACE_ROOT>/tools/safety/safe-delete.sh <WORKSPACE_ROOT>/open 和 bash <WORKSPACE_ROOT>/tools/safety/safe-delete.sh <WORKSPACE_ROOT>/2026-08-21.md（二者均为空；若 safe-delete.sh 用法不同，先读脚本头部说明再调用；绝不用 rm）。
 
       【步骤 6 · 迁移（不归档）】
-      mv "信息员盘点与历史会话分析_2026-08-25.html" "受众实测画像_示例.html" "受众画像与内容盘点分析_2026-08-25.html" "连接器准备清单_2026-08-25.html" "行途任务进度看板_2026-08-20.html" → outputs/
+      mv "信息员盘点与历史会话分析_2026-08-25.html" "受众实测画像_示例.html" "受众画像与内容盘点分析_2026-08-25.html" "连接器准备清单_2026-08-25.html" "行途技术任务进度看板_2026-08-20.html" → outputs/
       mv publish.sh publish-public.sh → tools/
       mv .resume_2026-09-03_断点续传.md → github/xingtu-vault/01_战略与规章 (Strategy & Rules)/specs/20260902-断点续传与集中提示词/
       mv 四大AI工程研读 → "xingtu-vault/07_调研与情报工作台/"
@@ -516,6 +526,7 @@ automations:
 
   # ------------------------------------------------ T-WB-10
   - slug: cloud-ai-news-summary
+    category: 信源
     id: cloud:1937308
     name: 生成昨日 AI 重点资讯总结
     status: PAUSED
@@ -537,6 +548,7 @@ automations:
 
   # ------------------------------------------------ T-LA-01（2026-09-30 新增）
   - slug: ops-feed-daily-push
+    category: 工作
     id: workbuddy:a5f76873-2439-4abd-ad50-2d4df5fb32f3 / launchagent:com.xingtu.opsfeed.daily
     name: 定时任务产出·每日滚动推送GitHub（ops_feed_sync）
     status: ACTIVE
@@ -565,6 +577,7 @@ automations:
 
   # ------------------------------------------------ T-WB-19（2026-10-12 新增）
   - slug: toolbelt-weekly-scan
+    category: 工作
     id: b72461e8-0bfe-493b-be75-5156aa6ff45f
     name: 云中立工具带每周盘点
     status: ACTIVE
@@ -593,6 +606,7 @@ automations:
 
   # ------------------------------------------------ T-CC-01~03（Claude Code 侧 scheduled_tasks）
   - slug: yuanbao-archive
+    category: 工作
     id: T-01
     name: 元宝会话自动化抓取入库
     status: ACTIVE
@@ -608,6 +622,7 @@ automations:
     note: 完整 spec（prompt 全文）在私有 registry .harness/scheduled/yuanbao-archive/spec.md
 
   - slug: session-archive
+    category: 工作
     id: T-02
     name: 会话归档入库（session-sediment）
     status: ACTIVE
@@ -623,6 +638,7 @@ automations:
     note: 完整 spec 在私有 registry .harness/scheduled/session-archive/spec.md
 
   - slug: knowledge-payment-reminder
+    category: 创作
     id: T-03
     name: 知识付费冷启动周提醒
     status: ACTIVE
@@ -639,6 +655,7 @@ automations:
 
   # ------------------------------------------------ T-WB-20（2026-10-12 补登：平台有而 registry 漏）
   - slug: mem-exam-daily-reminder
+    category: 生活
     id: 3a5cc2f3-13a1-4a9a-a72f-6e5c5cde5c29
     name: MEM考研·每日学习打卡提醒与记录（21:00学习档）
     status: ACTIVE
@@ -654,25 +671,38 @@ automations:
       - <WORKSPACE_ROOT>/github/xingtu-learn/（打卡记录）
     note: prompt 全文待从平台导出回填私有 registry
 
-  # ------------------------------------------------ T-WB-21（2026-10-14 补登：平台有而 registry 漏）
+  # ------------------------------------------------ T-WB-21（2026-10-14 补登：平台有而 registry 漏；2026-10-19 事实校正）
   - slug: desk-data-daily-sync
+    category: 工作
     id: 7ec3cffb-225a-43b5-89c5-392e62394cf8
-    name: 行途工作台·每日数据同步
+    name: 行途技术工作台·每日数据同步
     status: ACTIVE
     ring: L1
     schedule:
       rrule: FREQ=DAILY;BYHOUR=0;BYMINUTE=0
       cron: "0 0 * * *"
-      human: 每天 08:00
+      human: 每天 00:00（spec 原定 08:00，实际按 rrule 00:00 执行）
     cwd:
       - <WORKSPACE_ROOT>
-    purpose: 同步工作台（xingtu-desk）的运营数据/看板至本地 git 仓，供主页与监测消费。
+    purpose: >-
+      本地工作区数据 → 资料库 8 表投影（投影非事实源；幂等 upsert；人写字段永不覆盖）+
+      素材索引重建 + 性能数据入库 + 一键分析简报，四步独立留痕。
+      入口：python3 tools/xt_job_api.py --run daily（白名单任务层，HTTP 仅绑 127.0.0.1）。
     artifacts:
-      - <WORKSPACE_ROOT>/github/xingtu-desk/data/
-    note: 产物落 xingtu-desk 仓内（已是 git/云端可见），不经 outputs/。完整 prompt 见平台侧。
+      - 资料库 8 表（云投影，可删可重建）：pipeline / tasks / metrics / milestones / ledgers / docs / automations / evolutions（platforms 人层全权，机器不写）
+      - <WORKSPACE_ROOT>/tools/xt_runs.jsonl（每步执行留痕）
+      - <WORKSPACE_ROOT>/github/xingtu-vault/02_素材库/索引/flywheel_index.json（materials 产物）
+      - <WORKSPACE_ROOT>/github/xingtu-desk/tools/sync/（管线代码留档镜像，2026-10-19 建，mirror_update.sh 可再同步）
+      - <WORKSPACE_ROOT>/github/xingtu-desk/data/sync_runs_YYYY-MM-DD.jsonl（xt_runs 快照）
+    note: >-
+      2026-10-19 事实校正：原 purpose「同步工作台运营数据/看板至本地 git 仓」与实际不符——
+      实际为灌资料库 8 表 + materials/ingest/analyze 四步；human 原记 08:00 与 rrule 00:00
+      矛盾，按 rrule 订正。管线代码已于同日留档进 xingtu-desk 仓（git 可见）。
+      完整 prompt 见平台侧。
 
   # ------------------------------------------------ T-WB-22（2026-10-14 补登）
   - slug: free-compute-daily
+    category: 工作
     id: 584e5ed0-f25d-4a4c-b68a-31c2ad74b828
     name: 免费算力实践日刊（每日 09:00）
     status: ACTIVE
@@ -692,6 +722,7 @@ automations:
 
   # ------------------------------------------------ T-WB-23（2026-10-14 补登）
   - slug: skill-library-weekly-checkup
+    category: 工作
     id: 580a2822-a08e-4c7b-96c7-a06f09b5c18f
     name: 技能库每周体检（checkup）
     status: ACTIVE
@@ -709,6 +740,7 @@ automations:
 
   # ------------------------------------------------ T-WB-24（2026-10-14 补登）
   - slug: github-article-reflux
+    category: 创作
     id: 4db37608-f36a-4425-85e0-6342b2854c5c
     name: GitHub文章回流公众号·每周1篇（差异化改写+脱敏）
     status: ACTIVE
@@ -723,3 +755,28 @@ automations:
     artifacts:
       - <WORKSPACE_ROOT>/github/xingtu-vault/02_草稿/回流草稿/
     note: 2026-10-14 补登。产出落 vault 02_草稿/回流草稿/（已是 SSoT，不经 outputs/）。完整 prompt 见平台侧。
+  # ------------------------------------------------ T-WB-25（2026-10-19 补登·漂移修复同步）
+  - slug: skill-evolution-miner
+    category: 工作
+    id: b066fba0-2fb2-43d3-a9ef-a11f4755d15f
+    name: 技能进化周分析（会话驱动）
+    status: ACTIVE
+    ring: L3
+    schedule:
+      rrule: FREQ=WEEKLY;BYDAY=MO;BYHOUR=11;BYMINUTE=0
+      cron: "0 11 * * 1"
+      human: 每周一 11:00
+    cwd:
+      - <WORKSPACE_ROOT>
+    purpose: 扫 xingtu 白名单会话源 -> 任务域热度 -> 创建/更新/下线三张清单 -> vault 报告（只供 boss 拍板，不自建/删 skill）。
+    artifacts:
+      - <WORKSPACE_ROOT>/github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/技能进化分析/技能进化分析_<日期>.html
+    prompt: |
+      【路径纪律】工作空间唯一根 = <WORKSPACE_ROOT>（~/工作室/xingtu 是废弃副本，禁止触碰）。产出只落 vault：github/xingtu-vault/03_运营工具箱 (Operations Toolkit)/定时任务产出/技能进化分析/。严禁写主区 outputs/（非 git 仓，云端 agent 看不见）。
+      【任务】运行 <PYTHON> tools/skill_evolution_miner.py，读取 data/skill_evolution_latest.json 的三张清单（创建/更新/下线候选），向 boss 汇报。
+      【汇报格式】①任务域热度 Top5（用户实际在干什么）②创建候选 Top3 ③下线候选 Top5（标注 converge_ok：✅可收敛/⏸️停手待审）④更新候选 Top3 ⑤规模告警（语料文件数/prompt 数/脱敏率异常时置顶加粗）。
+      【成功标准】①脚本退出码 0 ②vault 当日「技能进化分析_<日期>.html」存在且 mtime 为今天 ③汇报含三张清单与告警。
+      【失败处理】脚本报错读 traceback 修一次；仍失败停止并报告，禁止反复重试。语料 <100 文件或 prompt <500 触发规模告警时照常出报告但标注「低置信度」。
+      【规模告警】语料文件 <100 或 >2000、prompt <500、禁词剔除率 >30% → 置顶加粗告警。
+      【隐私铁律 SAF-010】脚本内置白名单只扫 xingtu 会话源；禁止把雇主项目（tfm-ng/ctf-gitlab/haiting 等）会话内容写进任何产出；报告样本仅限脚本脱敏后的内容。
+      【禁止动作】不自动创建/删除任何 skill（三张清单只供 boss 拍板）；不 push 任何公开仓。
