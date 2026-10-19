@@ -68,7 +68,7 @@ automations:
   # ------------------------------------------------ T-WB-01
   - slug: session-broadcast-collect
     category: 创作
-    id: b27584d3-843b-45f9-a552-4525f21fd1d6
+    id: b27584d3-843b-4448-8a84-4a279f19bc64
     name: AI会话广撒网采集·主题与自媒体潜力分析（每日累积沉淀）
     status: ACTIVE
     ring: L1
