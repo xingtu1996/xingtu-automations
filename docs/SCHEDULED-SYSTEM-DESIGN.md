@@ -126,6 +126,19 @@ xt-scheduler drift                       # registry vs 各平台实时对账，�
 
 **script_runtime 约定（沿用参考源优点，修正其"禁装 pyyaml"为"基建优先"）**：简单 YAML 用 awk，复杂用 python（已装 PyYAML 于受管 venv），不引入非必要系统依赖。
 
+### 5.1 落地现状（2026-10-19 核对）
+
+§5 的「或各仓 `.claude/`」分支已由**工作区根 `.claude/`** 承担，无需在 `xingtu-harness/.claude/` 另建（避免两处配置双真源）：
+
+| 文件 | 现状 | 说明 |
+|---|---|---|
+| `config.yaml` | ✅ 已在工作区根 `.claude/` | 品牌已刷为「行途技术」；⚠️ 仍含旧结构路径 `~/工作室/xingtu`（见下方 drift） |
+| `settings.json` | ✅ 已在工作区根 `.claude/` | `permissions.allow` 已收敛（rtk/ls/find/grep） |
+| `user-config.yaml` | ✅ 已在工作区根 `.claude/` | 品牌刷为「行途技术」、git 邮箱刷为 `xingtutech@163.com`（按 §7 决策） |
+| `scheduled_tasks.json` | ⏸ 暂不建 | 当前定时任务全部是 WorkBuddy automation（registry 无 CC 任务）；**仅在采用 Claude Code 定时任务时**按上表格式新建，`cwd` 用 `<WORKSPACE_ROOT>` 占位 |
+
+**已知漂移（挂账，待单独 refresh，本次未盲改）**：`config.yaml` 的 `project.workspace/vault/specs` 仍指向 `~/工作室/xingtu/...`（历史残留副本路径），而 vault 实际已迁到 `github/xingtu-vault/`。路径结构改动风险高（涉及多处相对引用），单独开一次「配置文件结构刷新」处理，不混在本次重命名任务里。
+
 ---
 
 ## 6. 提交纪律
