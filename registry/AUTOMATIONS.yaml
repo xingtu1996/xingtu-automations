@@ -400,8 +400,8 @@ automations:
       4) 确认看板 `素材库/素材看板.html` 占位符 __DATA__/__GEN__ 已替换、含 JSON-LD(CollectionPage)。
 
       【入库口径（Skill 规范）】
-      - 源目录：内部代码仓/内部工程平台 的 .claude/{templates,research,specs,incidents,memory,plans}
-        + gi-doc/tenant-mgmt + 某售前项目（共 11 源）。incidents/memory/plans 不读正文，仅抽主题。
+      - 源目录：内部代码仓/内部文档平台 的 .claude/{templates,research,specs,incidents,memory,plans}
+        + 两个内部文档/租户管理仓 + 某售前项目（共 11 源）。incidents/memory/plans 不读正文，仅抽主题。
       - 脱敏三档：低（公开方法论）/中（泛化项目代号）/高（incidents·memory·plans）/极高（某售前项目 仅方法论外壳）。
       - 细化拆分：research 按 H2 拆卡、数据密集 research 拆多卡、templates 各成 1 卡。
 
