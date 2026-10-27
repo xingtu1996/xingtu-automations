@@ -339,7 +339,7 @@ automations:
     prompt: |
       对行途技术 GitHub 开源矩阵（19 公开仓 + 5 私有仓）做每周健康度巡检，产出单文件 HTML 报告。这是矩阵目前唯一一道自动化防线——没有它，24 个仓全靠人工记得。
 
-      【路径纪律】工作空间唯一根目录 `<WORKSPACE_ROOT>`。仓库本地副本在 `<WORKSPACE_ROOT>/github/*` 与 `<WORKSPACE_ROOT>/md2wechat/`。
+      【路径纪律】工作空间唯一根目录 `<WORKSPACE_ROOT>`。仓库本地副本在 `<WORKSPACE_ROOT>/github/*` 与 `<WORKSPACE_ROOT>/github/md2wechat/`。
       【工具纪律】`gh` 实体在 `/opt/homebrew/bin/gh`（不在 PATH），需先 `export TOKEN=$(printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain get | awk -F= '/^password/{print $2}')` 再 `GH_HOST=github.com GH_TOKEN="$TOKEN" /opt/homebrew/bin/gh ...`。**github.com 的 SSH 不通**，push 一律走 HTTPS 或 `tools/gh_push_api.py`（走 Contents API，自动跳过相同文件，用法 `python3 tools/gh_push_api.py <目录> <owner/repo> [--dry-run]`）。
 
       【巡检项】
