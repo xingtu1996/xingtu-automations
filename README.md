@@ -1,8 +1,8 @@
-# xingtu-automations · 多 Agent 定时任务 Registry
+# xingtu-scheduled · 多 Agent 定时任务 Registry
 
 > **一个工作流的「自动驾驶层」：所有定时任务的工具中立清单 + 跨平台重建指南。**
 
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) ![Automations](https://img.shields.io/badge/automations-17-blue.svg) ![Platforms](https://img.shields.io/badge/platforms-WorkBuddy%20%7C%20Claude%20Code%20%7C%20cron-orange.svg) ![Tool Neutral](https://img.shields.io/badge/tool--neutral-rebuild--anywhere-purple.svg)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) ![Scheduled](https://img.shields.io/badge/scheduled-22-blue.svg) ![Platforms](https://img.shields.io/badge/platforms-WorkBuddy%20%7C%20Claude%20Code%20%7C%20cron-orange.svg) ![Tool Neutral](https://img.shields.io/badge/tool--neutral-rebuild--anywhere-purple.svg)
 
 ---
 
@@ -14,11 +14,11 @@
 
 配套姊妹仓：[xingtu-skills](https://github.com/xingtu1996/xingtu-skills)（任务里调用的技能）、[xingtu-harness](https://github.com/xingtu1996/xingtu-harness)（一键拉全资产的工作台）。
 
-## 当前编目（17 条）
+## 当前编目（22 条）
 
 | 平台 | 条数 | 说明 |
 |---|---|---|
-| WorkBuddy automation | 14 | 内容飞轮主线：舆情→选题→成稿→发布→复盘→分发闭环 |
+| WorkBuddy automation | 19 | 内容飞轮主线：舆情→选题→成稿→发布→复盘→分发闭环 |
 | Claude Code scheduled_tasks | 3 | 会话归档、元宝抓取、知识付费提醒 |
 | crontab | — | 按需挂载，定义同 schema |
 
@@ -55,17 +55,17 @@ cat registry/AUTOMATIONS.yaml
 
 ---
 
-一线 AI 工程化实践者 · FDE 方向 · 公众号「行途技术」· GitHub/X：`@xingtu1996`
+一线 AI 工程化实践者 · FDE 方向 · 公众号「行途技术手记」· GitHub/X：`@xingtu1996`
 
 *公开镜像只含占位符路径与聚合口径；私有 registry（含真实路径与完整 prompt）在工作区 `.harness/scheduled/`。*
 
-## 关于作者 · 行途技术
+## 关于作者 · 行途 XingTu
 
-- 公众号「行途技术」（长文首发，微信搜索关注）
+- 公众号「行途技术手记」（长文首发，微信搜索关注）
 
 一线 AI 工程化实践者 · FDE 方向。这些仓库不是写出来的，是每天真用、用完回炉改的。
 
-- 公众号「**行途技术**」（长文首发，微信搜索关注）
+- 公众号「**行途技术手记**」（长文首发，微信搜索关注）
 - GitHub / X：`@xingtu1996` ｜ 博客：https://xingtu1996.github.io
 - 方法论旗舰仓：[xingtu-ai-engineering](https://github.com/xingtu1996/xingtu-ai-engineering)
 
