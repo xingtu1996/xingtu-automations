@@ -48,9 +48,9 @@ xt-scheduler drift                       # registry vs 各平台实时对账，�
 
 ---
 
-## 3. 四类定时任务规划（基于 27 仓库，排除已归档）
+## 3. 四类定时任务规划（按当前开源矩阵仓库归类）
 
-> 已归档（2026-10-12）：xingtu-cli / xingtu-cloud-neutral / xingtu-design / xingtu-hooks / xingtu-mcps / xingtu-prompts → **不纳入活跃调度**，仅作信源/历史参考。
+> 口径更新（2026-10-29 D2 终裁）：xingtu-cli / xingtu-cloud-neutral / xingtu-design / xingtu-hooks / xingtu-mcps / xingtu-prompts 六仓已**解归档、恢复为独立活跃仓**，与其余仓库同等纳入矩阵，不再作为「已归档/仅历史参考」排除；2026-10-12 的批量收口归档口径已作废。
 > 活跃仓库按四类归仓：
 
 ### 3.1 🗂 生活（个人成长/管理）
@@ -132,12 +132,12 @@ xt-scheduler drift                       # registry vs 各平台实时对账，�
 
 | 文件 | 现状 | 说明 |
 |---|---|---|
-| `config.yaml` | ✅ 已在工作区根 `.claude/` | 品牌已刷为「行途技术」；⚠️ 仍含旧结构路径 `~/工作室/xingtu`（见下方 drift） |
+| `config.yaml` | ✅ 已在工作区根 `.claude/` | 品牌已刷为「行途技术」；⚠️ 仍含旧结构路径 `<WORKSPACE_ROOT>`（见下方 drift） |
 | `settings.json` | ✅ 已在工作区根 `.claude/` | `permissions.allow` 已收敛（rtk/ls/find/grep） |
 | `user-config.yaml` | ✅ 已在工作区根 `.claude/` | 品牌刷为「行途技术」、git 邮箱刷为 `xingtutech@163.com`（按 §7 决策） |
 | `scheduled_tasks.json` | ⏸ 暂不建 | 当前定时任务全部是 WorkBuddy automation（registry 无 CC 任务）；**仅在采用 Claude Code 定时任务时**按上表格式新建，`cwd` 用 `<WORKSPACE_ROOT>` 占位 |
 
-**已知漂移（挂账，待单独 refresh，本次未盲改）**：`config.yaml` 的 `project.workspace/vault/specs` 仍指向 `~/工作室/xingtu/...`（历史残留副本路径），而 vault 实际已迁到 `github/xingtu-vault/`。路径结构改动风险高（涉及多处相对引用），单独开一次「配置文件结构刷新」处理，不混在本次重命名任务里。
+**已知漂移（挂账，待单独 refresh，本次未盲改）**：`config.yaml` 的 `project.workspace/vault/specs` 仍指向旧本地工作区根路径 `<WORKSPACE_ROOT>/...`（历史残留副本路径），而 vault 实际已迁到 `github/xingtu-vault/`。路径结构改动风险高（涉及多处相对引用），单独开一次「配置文件结构刷新」处理，不混在本次重命名任务里。
 
 ---
 
